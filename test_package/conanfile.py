@@ -1,11 +1,13 @@
+import sys
 from conans import ConanFile
 
 
 class TestEmbeddedPython(ConanFile):
-    settings = None
+    settings = "os"
 
     def imports(self):
-        self.copy("*", dst="python", src="embedded_python")
+        import embedded_python_tools
+        embedded_python_tools.symlink_import(self, dst="bin/python")
 
     def test(self):
-        self.run(".\\python\\python.exe --version")
+        self.run(".\\bin\\python\\python.exe --version")
