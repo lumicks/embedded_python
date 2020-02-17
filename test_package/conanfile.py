@@ -4,6 +4,9 @@ from conans import ConanFile
 
 class TestEmbeddedPython(ConanFile):
     settings = "os"
+    default_options = (
+        "embedded_python:version=3.7.6", 
+    )
 
     def imports(self):
         import embedded_python_tools
