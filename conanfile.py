@@ -14,7 +14,6 @@ class EmbeddedPython(ConanFile):
     settings = {"os": ["Windows"]}
     options = {"pip_packages": "ANY"}
     default_options = "pip_packages=None"
-    exports = "embedded_python.manifest"  # needed to find the python dll outside of the exe dir
     short_paths = True  # some of the pip packages go over the 260 char path limit on Windows
 
     def _get_binaries(self):
