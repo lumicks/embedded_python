@@ -48,6 +48,7 @@ class EmbeddedPython(ConanFile):
 
     def package(self):
         self.copy("*", keep_path=True)
+        self.copy("embedded_python/LICENSE.txt", dst="licenses", keep_path=False)
 
     def package_info(self):
         self.env_info.PYTHONPATH.append(self.package_folder)
