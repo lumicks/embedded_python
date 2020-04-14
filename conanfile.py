@@ -5,7 +5,7 @@ from conans import ConanFile, tools
 
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.0.0"  # of the Conan package, `options.version` is the Python version
+    version = "1.1.0"  # of the Conan package, `options.version` is the Python version
     description = "Embedded distribution of Python"
     url = "https://www.python.org/"
     license = "PSFL"
@@ -44,11 +44,20 @@ class EmbeddedPython(ConanFile):
         target = self.build_folder + "/embedded_python/Lib/site-packages"
         packages = self.options.packages.value
         packages += " setuptools==45.2.0"  # some modules always assume it's installed (e.g. pytest)
+        packages += " pip-licenses==2.1.1"  # so we can gather the licenses that we use
         self.run(f'{sys.executable} -m pip install --no-deps --python-version {pyver} --target "{target}" {packages}')
+
+        # Gather the licenses using a pipenv
+        pipenv_pyver = ".".join(version.split(".")[:2]) # e.g. 3.7.3 -> 3.7
+        self.run(f"{sys.executable} -m pipenv --python {pipenv_pyver} install {packages}")
+        self.run(f"{sys.executable} -m pipenv run pip-licenses --with-system --from=mixed --format=plain-vertical"
+                 f" --with-license-file --no-license-path --output-file=package_licenses.txt")
+        self.run(f"{sys.executable} -m pipenv --rm")
 
     def package(self):
         self.copy("*", keep_path=True)
         self.copy("embedded_python/LICENSE.txt", dst="licenses", keep_path=False)
+        self.copy("package_licenses.txt", dst="licenses")
 
     def package_info(self):
         self.env_info.PYTHONPATH.append(self.package_folder)
