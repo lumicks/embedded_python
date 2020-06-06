@@ -1,6 +1,8 @@
 Embedded python distribution
 ----------------------------
 
+[![](https://github.com/lumicks/embedded_python/workflows/test_package/badge.svg)](https://github.com/lumicks/embedded_python/actions)
+
 This conan recipe builds an embedded Python distribution which can be placed directly into the `bin` directory of an application for its exclusive use.
 Windows-only for now.
 
