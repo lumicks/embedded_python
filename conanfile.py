@@ -74,7 +74,7 @@ class EmbeddedPython(ConanFile):
         This will dump a bunch of packages into bootstrap but it doesn't matter since we 
         won't be using it for anything else afterward.
         """
-        packages += " pip-licenses==2.1.1"
+        packages += " pip-licenses==2.2.0"
         self.run(f"{bootstrap} -m pip install --no-warn-script-location {packages}")
         self.run(f"{bootstrap} -m piplicenses --with-system --from=mixed --format=plain-vertical"
                  f" --with-license-file --no-license-path --output-file=package_licenses.txt")
