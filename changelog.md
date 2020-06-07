@@ -3,6 +3,7 @@
 ## v1.2.0 | 2020-06-08
 
 - It's now possible to package any version of the embedded Python, independent of the version on the host system.
+- Updated to `pip-licenses` v2.2.0: `--with-license-file` now finds British-style `LICENCE` files.
 
 ## v1.1.0 | 2020-04-14
 
