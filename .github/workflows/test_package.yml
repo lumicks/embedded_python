@@ -26,3 +26,5 @@ jobs:
       run: ${{ env.create_pck }} -o test_embedded_python:env=pytest
     - name: Test with numpy env
       run: ${{ env.create_pck }} -o test_embedded_python:env=numpy
+    - name: Test with nbconvert env
+      run: ${{ env.create_pck }} -o test_embedded_python:env=nbconvert

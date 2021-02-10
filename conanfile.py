@@ -6,7 +6,7 @@ from conans import ConanFile, tools
 
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.2.0"  # of the Conan package, `options.version` is the Python version
+    version = "1.2.1"  # of the Conan package, `options.version` is the Python version
     description = "Embedded distribution of Python"
     url = "https://www.python.org/"
     license = "PSFL"
@@ -93,8 +93,9 @@ class EmbeddedPython(ConanFile):
         self._gather_licenses(bootstrap, packages)
 
         packages += " setuptools==47.1.1"  # some modules always assume it's installed (e.g. pytest)
-        target = pathlib.Path(self.build_folder) / "embedded_python/Lib/site-packages"
-        self.run(f'{bootstrap} -m pip install --no-deps --target "{target}" {packages}')
+        prefix = pathlib.Path(self.build_folder) / "embedded_python"
+        options = "--ignore-installed --no-warn-script-location"
+        self.run(f'{bootstrap} -m pip install --no-deps --prefix "{prefix}" {options} {packages}')
 
     def package(self):
         self.copy("embedded_python/*", keep_path=True)
