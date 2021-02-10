@@ -2,9 +2,10 @@ import pathlib
 import sys
 from conans import ConanFile
 
+project_root = pathlib.Path(__file__).parent
+
 
 def _read_env(name):
-    project_root = pathlib.Path(__file__).parent
     with open(project_root / f"envs/{name}.txt") as f:
         return f.read().replace("\n", " ")
 
@@ -30,15 +31,16 @@ class TestEmbeddedPython(ConanFile):
     def _test_env(self):
         """Ensure that Python runs and finds the installed environment"""
         script = "import sys; print(sys.version);"
+        name = str(self.options.env)
         if self.options.env:
-            name = str(self.options.env)
             script += f"import {name}; print('Found {name}');"
 
-        # Run numpy distributes its test, run them
-        if self.options.env == "numpy":
-            script += "import numpy; sys.exit(not numpy.test(verbose=2))"
-
         self.run(f".\\bin\\python\\python.exe -c \"{script}\"")
+
+        if self.options.env:
+            test_path = project_root / f"envs/{name}_test.py"
+            if test_path.exists():
+                self.run(f".\\bin\\python\\python.exe \"{test_path}\"") 
 
     def _test_licenses(self):
         """Ensure that the licenses have been gathered"""
