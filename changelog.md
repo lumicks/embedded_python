@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.1 | 2021-02-15
+
+- Fixed data and scripts not being installed with certain packages (e.g. `nbconvert>=6.0`)
+
 ## v1.2.0 | 2020-06-08
 
 - It's now possible to package any version of the embedded Python, independent of the version on the host system.
