@@ -92,7 +92,7 @@ class EmbeddedPython(ConanFile):
         packages = self.options.packages.value
         self._gather_licenses(bootstrap, packages)
 
-        packages += " setuptools==47.1.1"  # some modules always assume it's installed (e.g. pytest)
+        packages += " setuptools==53.0.0"  # some modules always assume it's installed (e.g. pytest)
         prefix = pathlib.Path(self.build_folder) / "embedded_python"
         options = "--ignore-installed --no-warn-script-location"
         self.run(f'{bootstrap} -m pip install --no-deps --prefix "{prefix}" {options} {packages}')

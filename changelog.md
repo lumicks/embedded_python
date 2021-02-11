@@ -3,6 +3,7 @@
 ## v1.2.1 | 2021-02-15
 
 - Fixed data and scripts not being installed with certain packages (e.g. `nbconvert>=6.0`)
+- Updated the embedded `setuptools` to v53.0.0
 
 ## v1.2.0 | 2020-06-08
 
