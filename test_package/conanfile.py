@@ -35,12 +35,16 @@ class TestEmbeddedPython(ConanFile):
         if self.options.env:
             script += f"import {name}; print('Found {name}');"
 
-        self.run(f".\\bin\\python\\python.exe -c \"{script}\"")
+        python_exe = str(pathlib.Path("./bin/python/python").resolve())
+        self.run([python_exe, "-c", script])
 
         if self.options.env:
             test_path = project_root / f"envs/{name}_test.py"
-            if test_path.exists():
-                self.run(f".\\bin\\python\\python.exe \"{test_path}\"") 
+        else:
+            test_path = project_root / "envs/baseline_test.py"
+
+        if test_path.exists():
+            self.run([python_exe, str(test_path)]) 
 
     def _test_licenses(self):
         """Ensure that the licenses have been gathered"""
