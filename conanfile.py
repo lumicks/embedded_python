@@ -13,7 +13,7 @@ class EmbeddedPython(ConanFile):
     settings = {"os": ["Windows"]}
     options = {"version": "ANY", "packages": "ANY"}
     default_options = "packages=None"
-    exports = "embedded_python_tools.py"
+    exports = "embedded_python_tools.py", "embedded_python.cmake"
     short_paths = True  # some of the pip packages go over the 260 char path limit on Windows
 
     @property
@@ -123,8 +123,11 @@ class EmbeddedPython(ConanFile):
     def package(self):
         self.copy("embedded_python/*", keep_path=True)
         self.copy("embedded_python_tools.py")
+        self.copy("embedded_python.cmake")
         self.copy("embedded_python/LICENSE.txt", dst="licenses", keep_path=False)
         self.copy("package_licenses.txt", dst="licenses")
 
     def package_info(self):
         self.env_info.PYTHONPATH.append(self.package_folder)
+        self.cpp_info.build_modules = ["embedded_python.cmake"]
+        self.user_info.pyversion = self._pyversion
