@@ -10,11 +10,41 @@ class EmbeddedPython(ConanFile):
     description = "Embedded distribution of Python"
     url = "https://www.python.org/"
     license = "PSFL"
-    settings = {"os": ["Windows"]}
-    options = {"version": "ANY", "packages": "ANY"}
-    default_options = "packages=None"
+    settings = "os", "compiler", "build_type", "arch"
+    options = {
+        "version": "ANY", 
+        "packages": "ANY", 
+        "openssl_variant": ["lowercase", "uppercase"]  # see explanation in `build_requirements()`
+    }
+    default_options = {
+        "packages": None,
+        "openssl_variant": "lowercase"
+    }
     exports = "embedded_python_tools.py", "embedded_python.cmake"
     short_paths = True  # some of the pip packages go over the 260 char path limit on Windows
+
+    def config_options(self):
+        """On Windows, we download a binary so these options have no effect"""
+        if self.settings.os == "Windows":
+            del self.settings.compiler
+            del self.settings.build_type
+
+    def build_requirements(self):
+        """On Windows, we download a binary so we don't need anything else"""
+        if self.settings.os == "Windows":
+            return
+
+        self.build_requires("sqlite3/3.35.5")
+        self.build_requires("bzip2/1.0.8")
+
+        # The pre-conan-center-index version of `openssl` was capitalized as `OpenSSL`.
+        # Both versions can't live in the same Conan cache so we need this compatibility
+        # option to pick the available version. The cache case-sensitivity issue should
+        # be solved in Conan 2.0, but we need this for now.
+        if self.options.openssl_variant == "lowercase":
+            self.build_requires("openssl/1.1.1k")
+        else:
+            self.build_requires("OpenSSL/1.1.1f")
 
     @property
     def pyversion(self):
@@ -64,7 +94,10 @@ class EmbeddedPython(ConanFile):
 
     def build(self):
         prefix = pathlib.Path(self.build_folder) / "embedded_python"
-        build_helper = WindowsBuildHelper(self, prefix)
+        if self.settings.os == "Windows":
+            build_helper = WindowsBuildHelper(self, prefix)
+        else:
+            build_helper = UnixLikeBuildHelper(self, prefix)
         build_helper.build_embedded()
 
         if not self.options.packages:
@@ -142,3 +175,72 @@ class WindowsBuildHelper:
 
         return python_exe
 
+
+class UnixLikeBuildHelper:
+    def __init__(self, conanfile, prefix_dir):
+        self.conanfile = conanfile
+        self.prefix_dir = prefix_dir
+
+    def _get_source(self):
+        url = f"https://github.com/python/cpython/archive/v{self.conanfile.pyversion}.tar.gz"
+        tools.get(url)
+        os.rename(f"cpython-{self.conanfile.pyversion}", "src")
+
+    @property
+    def _openssl_path(self):
+        if self.conanfile.options.openssl_variant == "lowercase":
+            pck = "openssl"
+        else:
+            pck = "OpenSSL"
+        return self.conanfile.deps_cpp_info[pck].rootpath
+
+    def _build(self, dest_dir):
+        from conans import AutoToolsBuildEnvironment
+
+        autotools = AutoToolsBuildEnvironment(self.conanfile)
+        env_vars = autotools.vars
+
+        # On Linux, we need to set RPATH so that `root/bin/python3` can correctly find the `.so`
+        # file in `root/lib` no matter where `root` is. We need it to be portable. We explicitly
+        # set `--disable-new-dtags` to use RPATH instead of RUNPATH. RUNPATH can be overridden by
+        # the LD_LIBRARY_PATH env variable which is not at all what we want for this self-contained
+        # package. Unlike RUNPATH, RPATH takes precedence over LD_LIBRARY_PATH.
+        if self.conanfile.settings.os == "Linux":
+            env_vars["LDFLAGS"] += " -Wl,-rpath,'$$ORIGIN/../lib' -Wl,--disable-new-dtags"
+        
+        config_args = " ".join([
+            "--enable-shared",
+            f"--prefix={dest_dir}",
+            f"--with-openssl={self._openssl_path}",
+        ])
+
+        tools.mkdir("./build")
+        with tools.chdir("./build"), tools.environment_append(env_vars):
+            self.conanfile.run(f"../src/configure {config_args}")
+            self.conanfile.run("make -j8")
+            self.conanfile.run("make install -j8")
+
+        ver = ".".join(self.conanfile.pyversion.split(".")[:2])
+        exe = str(dest_dir / f"bin/python{ver}")
+        self.conanfile.run(f"{exe} -m pip install -U pip==21.1.1")
+
+        # Move the license file to match the Windows layout
+        lib_dir = dest_dir / "lib"
+        os.rename(lib_dir / f"python{ver}/LICENSE.txt", dest_dir / "LICENSE.txt")
+
+        # Give write permissions, otherwise end-user projects won't be able to re-import
+        # the shared libraries (re-import happens on subsequent `conan install` runs).
+        for file in lib_dir.glob("libpython*"):
+            self.conanfile.run(f"chmod 777 {file}")
+
+    def build_embedded(self):
+        self._get_source()
+        self._build(self.prefix_dir)
+
+    def enable_site_packages(self):
+        """These are enabled by default when building from source"""
+        pass
+
+    def build_bootstrap(self):
+        """For now, as a shortcut, we'll let the Unix-like builds bootstrap themselves"""
+        return self.prefix_dir / "bin/python3"

@@ -4,10 +4,11 @@ on: [push]
 
 jobs:
   test_package:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        embedded-py: [3.7.7, 3.8.3]
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        embedded-py: [3.7.7, 3.8.10]
     env:
       create_pck: conan create . lumicks/testing -o embedded_python:version=${{ matrix.embedded-py }}
     steps:
@@ -18,7 +19,7 @@ jobs:
         python-version: 3.7
     - name: Install Conan
       run: | 
-        python -m pip install conan==1.25.2
+        python -m pip install conan==1.36.0
         conan profile new default --detect
     - name: Test baseline
       run: ${{ env.create_pck }}

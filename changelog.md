@@ -1,7 +1,10 @@
 # Changelog
 
-## v1.3.0 | In development
+## v1.3.0 | 2021-06-03
 
+- Added support for Linux and macOS with a couple of caveats to be resolved later:
+  * The standard library is not pre-compiled and zipped so it takes up more space than the Windows variant
+  * The environment is not as locked down as the Windows variant: `pip` is still accessible in the final package
 - The `packages` option now accepts the full contents of a `requirements.txt` file.
   Previously, the contents needed to be converted into a space-separated list (`.replace("\n", " ")`) and stripped of comments and markers.
 - CMake will now automatically call `find_package(Python)` and ensure that the embedded distribution is found instead of a system-installed Python.
