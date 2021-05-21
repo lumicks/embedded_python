@@ -1,6 +1,6 @@
 import pathlib
 import sys
-from conans import ConanFile
+from conans import ConanFile, CMake
 
 project_root = pathlib.Path(__file__).parent
 
@@ -13,6 +13,7 @@ def _read_env(name):
 class TestEmbeddedPython(ConanFile):
     name = "test_embedded_python"
     settings = "os"
+    generators = "cmake"
     options = {"env": "ANY"}
     default_options = {
         "env": None,
@@ -27,6 +28,11 @@ class TestEmbeddedPython(ConanFile):
         import embedded_python_tools
         embedded_python_tools.symlink_import(self, dst="bin/python")
         self.copy("licenses/*", dst="licenses", folder=True, ignore_case=True, keep_path=False)
+
+    def build(self):
+        cmake = CMake(self)
+        cmake.configure()
+        cmake.build()
 
     def _test_env(self):
         """Ensure that Python runs and finds the installed environment"""

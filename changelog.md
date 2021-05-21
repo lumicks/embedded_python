@@ -4,6 +4,8 @@
 
 - The `packages` option now accepts the full contents of a `requirements.txt` file.
   Previously, the contents needed to be converted into a space-separated list (`.replace("\n", " ")`) and stripped of comments and markers.
+- CMake will now automatically call `find_package(Python)` and ensure that the embedded distribution is found instead of a system-installed Python.
+  Previously, consumer projects needed to do this manually.
 
 ## v1.2.1 | 2021-02-15
 
