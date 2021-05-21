@@ -17,14 +17,14 @@ class EmbeddedPython(ConanFile):
     short_paths = True  # some of the pip packages go over the 260 char path limit on Windows
 
     @property
-    def _pyversion(self):
+    def pyversion(self):
         """Full Python version that we want to package"""
         return str(self.options.version)
 
     @property
-    def _pyver(self):
+    def pyver(self):
         """Two-digit integer version, e.g. 3.7.3 -> 37"""
-        return "".join(self._pyversion.split(".")[:2])
+        return "".join(self.pyversion.split(".")[:2])
 
     def make_requirements_file(self, extra_packages=None):
         """Create a `requirements.txt` based on `self.options.packages` and return its path
@@ -49,46 +49,6 @@ class EmbeddedPython(ConanFile):
             f.write("\n".join(packages_list))
         return filepath
 
-    def _get_binaries(self, dest_dir):
-        """Get the binaries from the special embeddable Python package"""
-        url = "https://www.python.org/ftp/python/{0}/python-{0}-embed-amd64.zip"
-        tools.get(url.format(self._pyversion), destination=dest_dir)
-
-    def _get_headers_and_lib(self, dest_dir):
-        """We also need headers and the `python3.lib` file to link against"""
-        url = "https://www.python.org/ftp/python/{0}/python-{0}-amd64-webinstall.exe"
-        tools.download(url.format(self._pyversion), filename="tmp\\installer.exe")
-        self.run("tmp\\installer.exe /quiet /layout")
-        dst = pathlib.Path(self.build_folder) / dest_dir
-        self.run(f"msiexec.exe /a {self.build_folder}\\tmp\\dev.msi targetdir={dst}")
-        tools.rmdir("tmp")
-
-    def _enable_site_packages(self, dest_dir):
-        """Enable site-packages, i.e. additional non-system packages"""
-        dst = pathlib.Path(self.build_folder) / dest_dir / f"python{self._pyver}._pth"
-        tools.replace_in_file(dst, "#import site", "import site")
-
-    def _bootstrap(self):
-        """Set up a special embedded Python environment for bootstrapping
-
-        The regular embedded Python package doesn't have pip and it doesn't automatically add
-        a script's parent directory to the module path (to restrict the embedded environment).
-        We want to keep those stricter embedded rules for our final package but we first need
-        to install some packages. For that, we download another embedded package and modify
-        it for bootstraping the final environment.
-        """
-        self._get_binaries("bootstrap")
-
-        # Deleting the ._pth file restores regular (non-embedded) module path rules
-        os.remove(pathlib.Path(self.build_folder) / f"bootstrap/python{self._pyver}._pth")
-
-        # We need pip to install packages
-        python_exe = pathlib.Path(self.build_folder) / "bootstrap/python.exe"
-        tools.download("https://bootstrap.pypa.io/get-pip.py", filename="get-pip.py")
-        self.run(f"{python_exe} get-pip.py")        
-
-        return python_exe
-
     def _gather_licenses(self, bootstrap):
         """Gather licenses for all packages using our bootstrap environment
 
@@ -103,20 +63,19 @@ class EmbeddedPython(ConanFile):
                  f" --with-license-file --no-license-path --output-file=package_licenses.txt")
 
     def build(self):
-        self._get_binaries("embedded_python")
-        self._get_headers_and_lib("embedded_python")
+        prefix = pathlib.Path(self.build_folder) / "embedded_python"
+        build_helper = WindowsBuildHelper(self, prefix)
+        build_helper.build_embedded()
 
         if not self.options.packages:
             return
 
-        self._enable_site_packages("embedded_python")
-        bootstrap = self._bootstrap()
-
+        build_helper.enable_site_packages()
+        bootstrap = build_helper.build_bootstrap()
         self._gather_licenses(bootstrap)
 
         # Some modules always assume that `setuptools` is installed (e.g. pytest)
         requirements = self.make_requirements_file(extra_packages=["setuptools==53.0.0"])
-        prefix = pathlib.Path(self.build_folder) / "embedded_python"
         options = "--ignore-installed --no-warn-script-location"
         self.run(f'{bootstrap} -m pip install --no-deps --prefix "{prefix}" {options} -r {requirements}')
 
@@ -130,4 +89,56 @@ class EmbeddedPython(ConanFile):
     def package_info(self):
         self.env_info.PYTHONPATH.append(self.package_folder)
         self.cpp_info.build_modules = ["embedded_python.cmake"]
-        self.user_info.pyversion = self._pyversion
+        self.user_info.pyversion = self.pyversion
+
+
+class WindowsBuildHelper:
+    def __init__(self, conanfile, prefix_dir):
+        self.conanfile = conanfile
+        self.prefix_dir = prefix_dir
+
+    def _get_binaries(self, dest_dir):
+        """Get the binaries from the special embeddable Python package"""
+        url = "https://www.python.org/ftp/python/{0}/python-{0}-embed-amd64.zip"
+        tools.get(url.format(self.conanfile.pyversion), destination=dest_dir)
+
+    def _get_headers_and_lib(self, dest_dir):
+        """We also need headers and the `python3.lib` file to link against"""
+        url = "https://www.python.org/ftp/python/{0}/python-{0}-amd64-webinstall.exe"
+        tools.download(url.format(self.conanfile.pyversion), filename="tmp\\installer.exe")
+        self.conanfile.run("tmp\\installer.exe /quiet /layout")
+        build_folder = self.conanfile.build_folder
+        self.conanfile.run(f"msiexec.exe /a {build_folder}\\tmp\\dev.msi targetdir={dest_dir}")
+        tools.rmdir("tmp")
+
+    def build_embedded(self):
+        self._get_binaries(self.prefix_dir)
+        self._get_headers_and_lib(self.prefix_dir)
+
+    def enable_site_packages(self):
+        """Enable site-packages, i.e. additional non-system packages"""
+        dst = self.prefix_dir / f"python{self.conanfile.pyver}._pth"
+        tools.replace_in_file(dst, "#import site", "import site")
+
+    def build_bootstrap(self):
+        """Set up a special embedded Python environment for bootstrapping
+
+        The regular embedded Python package doesn't have pip and it doesn't automatically add
+        a script's parent directory to the module path (to restrict the embedded environment).
+        We want to keep those stricter embedded rules for our final package but we first need
+        to install some packages. For that, we download another embedded package and modify
+        it for bootstraping the final environment.
+        """
+        self._get_binaries("bootstrap")
+
+        # Deleting the ._pth file restores regular (non-embedded) module path rules
+        build_folder = pathlib.Path(self.conanfile.build_folder)
+        os.remove(build_folder / f"bootstrap/python{self.conanfile.pyver}._pth")
+
+        # We need pip to install packages
+        python_exe = build_folder / "bootstrap/python.exe"
+        tools.download("https://bootstrap.pypa.io/get-pip.py", filename="get-pip.py")
+        self.conanfile.run(f"{python_exe} get-pip.py")
+
+        return python_exe
+
