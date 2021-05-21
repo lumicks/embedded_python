@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.0 | In development
+
+- The `packages` option now accepts the full contents of a `requirements.txt` file.
+  Previously, the contents needed to be converted into a space-separated list (`.replace("\n", " ")`) and stripped of comments and markers.
+
 ## v1.2.1 | 2021-02-15
 
 - Fixed data and scripts not being installed with certain packages (e.g. `nbconvert>=6.0`)
