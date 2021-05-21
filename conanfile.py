@@ -6,7 +6,7 @@ from conans import ConanFile, tools
 
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.2.1"  # of the Conan package, `options.version` is the Python version
+    version = "1.3.0"  # of the Conan package, `options.version` is the Python version
     description = "Embedded distribution of Python"
     url = "https://www.python.org/"
     license = "PSFL"
@@ -25,6 +25,29 @@ class EmbeddedPython(ConanFile):
     def _pyver(self):
         """Two-digit integer version, e.g. 3.7.3 -> 37"""
         return "".join(self._pyversion.split(".")[:2])
+
+    def make_requirements_file(self, extra_packages=None):
+        """Create a `requirements.txt` based on `self.options.packages` and return its path
+        
+        We accept `self.options.packages` as either a space-separated list of packages (as
+        you would pass to `pip install <packages>`) or the full contents of a `requirements.txt`
+        file (as you would pass to `pip install -r <file>`). But in either case, we generate
+        a `requirements.txt` file internally for installation.
+
+        The `extra_packages` can be used to add extra packages (as a Python `list`) to be 
+        installed in addition to `self.options.packages`.
+        """
+        packages_str = str(self.options.packages)
+        is_file = "\n" in packages_str  # requirements.txt as opposed to space-separated list
+        packages_list = packages_str.strip().split("\n" if is_file else " ")
+
+        if extra_packages:
+            packages_list.extend(extra_packages)
+
+        filepath = pathlib.Path("requirements.txt").resolve()
+        with open(filepath, "w") as f:
+            f.write("\n".join(packages_list))
+        return filepath
 
     def _get_binaries(self, dest_dir):
         """Get the binaries from the special embeddable Python package"""
@@ -66,7 +89,7 @@ class EmbeddedPython(ConanFile):
 
         return python_exe
 
-    def _gather_licenses(self, bootstrap, packages):
+    def _gather_licenses(self, bootstrap):
         """Gather licenses for all packages using our bootstrap environment
 
         We can't run `pip-licenses` in the final environment because it doesn't have `pip`.
@@ -74,8 +97,8 @@ class EmbeddedPython(ConanFile):
         This will dump a bunch of packages into bootstrap but it doesn't matter since we 
         won't be using it for anything else afterward.
         """
-        packages += " pip-licenses==2.2.0"
-        self.run(f"{bootstrap} -m pip install --no-warn-script-location {packages}")
+        requirements = self.make_requirements_file(extra_packages=["pip-licenses==2.2.0"])
+        self.run(f"{bootstrap} -m pip install --no-warn-script-location -r {requirements}")
         self.run(f"{bootstrap} -m piplicenses --with-system --from=mixed --format=plain-vertical"
                  f" --with-license-file --no-license-path --output-file=package_licenses.txt")
 
@@ -89,13 +112,13 @@ class EmbeddedPython(ConanFile):
         self._enable_site_packages("embedded_python")
         bootstrap = self._bootstrap()
 
-        packages = self.options.packages.value
-        self._gather_licenses(bootstrap, packages)
+        self._gather_licenses(bootstrap)
 
-        packages += " setuptools==53.0.0"  # some modules always assume it's installed (e.g. pytest)
+        # Some modules always assume that `setuptools` is installed (e.g. pytest)
+        requirements = self.make_requirements_file(extra_packages=["setuptools==53.0.0"])
         prefix = pathlib.Path(self.build_folder) / "embedded_python"
         options = "--ignore-installed --no-warn-script-location"
-        self.run(f'{bootstrap} -m pip install --no-deps --prefix "{prefix}" {options} {packages}')
+        self.run(f'{bootstrap} -m pip install --no-deps --prefix "{prefix}" {options} -r {requirements}')
 
     def package(self):
         self.copy("embedded_python/*", keep_path=True)
