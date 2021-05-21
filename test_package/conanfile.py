@@ -41,7 +41,10 @@ class TestEmbeddedPython(ConanFile):
         if self.options.env:
             script += f"import {name}; print('Found {name}');"
 
-        python_exe = str(pathlib.Path("./bin/python/python").resolve())
+        if self.settings.os == "Windows":
+            python_exe = str(pathlib.Path("./bin/python/python").resolve())
+        else:
+            python_exe = str(pathlib.Path("./bin/python/bin/python3").resolve())
         self.run([python_exe, "-c", script])
 
         if self.options.env:

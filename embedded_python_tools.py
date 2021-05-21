@@ -3,7 +3,17 @@ import shutil
 import pathlib
 
 
-def symlink_import(self, dst="bin/python/interpreter", bin="bin"):
+def _symlink_compat(conanfile, src, dst):
+    """On Windows, symlinks require admin privileges, so we use a directory junction instead"""
+    if conanfile.settings.os == "Windows":
+        import _winapi
+
+        _winapi.CreateJunction(str(src), str(dst))
+    else:
+        os.symlink(src, dst)
+
+
+def symlink_import(conanfile, dst="bin/python/interpreter", bin="bin"):
     """Copying the entire embedded Python environment is extremely slow, so we just symlink it
 
     Usage:
@@ -13,8 +23,7 @@ def symlink_import(self, dst="bin/python/interpreter", bin="bin"):
         embedded_python_tools.symlink_import(self, dst="bin/python/interpreter")
     ```
 
-    On Windows, symlinks require admin privileges, so we use a directory junction instead.
-    It points to the Conan package location. We still want to copy in `python*.dll` and
+    The symlink points to the Conan package location. We still want to copy in `python*.dll` and
     `python*.zip` right next to the executable so that they can be found, but the rest of
     the Python environment is in a subfolder:
 
@@ -27,24 +36,21 @@ def symlink_import(self, dst="bin/python/interpreter", bin="bin"):
     |- python*.zip
     \- ...
     """
-    if self.settings.os != "Windows":
-        return
-
-    import _winapi
-
     dst = pathlib.Path(dst).absolute()
     if not dst.parent.exists():
         dst.parent.mkdir(parents=True)
 
     if dst.exists():
-        try:  # to remove any existing junction
+        try:  # to remove any existing junction/symlink
             os.remove(dst)
         except:  # this seems to be the only way to find out this is not a junction 
             shutil.rmtree(dst)
 
-    src = pathlib.Path(self.deps_cpp_info["embedded_python"].rootpath) / "embedded_python"
-    _winapi.CreateJunction(str(src), str(dst))
+    src = pathlib.Path(conanfile.deps_cpp_info["embedded_python"].rootpath) / "embedded_python"
+    _symlink_compat(conanfile, src, dst)
 
     bin = pathlib.Path(bin).absolute()
-    self.copy("python*.dll", dst=bin, src="embedded_python", keep_path=False)
-    self.copy("python*.zip", dst=bin, src="embedded_python", keep_path=False)
+    conanfile.copy("python*.dll", dst=bin, src="embedded_python", keep_path=False)
+    conanfile.copy("libpython*.so*", dst=bin, src="embedded_python/lib", keep_path=False)
+    conanfile.copy("libpython*.dylib", dst=bin, src="embedded_python/lib", keep_path=False)
+    conanfile.copy("python*.zip", dst=bin, src="embedded_python", keep_path=False)
