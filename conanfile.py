@@ -6,7 +6,7 @@ from conans import ConanFile, tools
 
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.3.0"  # of the Conan package, `options.version` is the Python version
+    version = "1.3.1"  # of the Conan package, `options.version` is the Python version
     description = "Embedded distribution of Python"
     url = "https://www.python.org/"
     license = "PSFL"
