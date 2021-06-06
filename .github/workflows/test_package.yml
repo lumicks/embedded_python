@@ -1,6 +1,6 @@
 name: test_package
 
-on: [push]
+on: push
 
 jobs:
   test_package:
@@ -10,17 +10,25 @@ jobs:
         os: [windows-latest, ubuntu-latest, macos-latest]
         embedded-py: [3.7.7, 3.8.10]
     env:
-      create_pck: conan create . lumicks/testing -o embedded_python:version=${{ matrix.embedded-py }}
+      create_pck: conan create . lumicks/testing -o embedded_python:version=${{ matrix.embedded-py }} --build=missing
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.7
+    - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: 3.7
     - name: Install Conan
       run: | 
         python -m pip install conan==1.36.0
+        conan config set general.revisions_enabled=True
         conan profile new default --detect
+    - name: Conan cache
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.conan/data
+          C:\.conan
+        key: conan-cache-${{ runner.os }}-py${{ matrix.embedded-py }}-${{ hashFiles('conanfile.py', '**/test_package.yml') }}
     - name: Test baseline
       run: ${{ env.create_pck }}
     - name: Test with pytest env
