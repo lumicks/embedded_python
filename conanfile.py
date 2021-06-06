@@ -6,7 +6,7 @@ from conans import ConanFile, tools
 
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.3.1"  # of the Conan package, `options.version` is the Python version
+    version = "1.3.2"  # of the Conan package, `options.version` is the Python version
     description = "Embedded distribution of Python"
     url = "https://www.python.org/"
     license = "PSFL"
@@ -67,10 +67,19 @@ class EmbeddedPython(ConanFile):
         The `extra_packages` can be used to add extra packages (as a Python `list`) to be 
         installed in addition to `self.options.packages`.
         """
-        packages_str = str(self.options.packages)
-        is_file = "\n" in packages_str  # requirements.txt as opposed to space-separated list
-        packages_list = packages_str.strip().split("\n" if is_file else " ")
+        def split_lines(string):
+            """`options.packages` may be encoded as tab, newline or space separated
 
+            The `\n` separator doesn't play well with Conan but we need to support 
+            it for backward compatibility.
+            """
+            for separator in ["\t", "\n"]:
+                if separator in string:
+                    return string.split(separator)
+            return string.split(" ")
+
+        packages_str = str(self.options.packages).strip()
+        packages_list = split_lines(packages_str)
         if extra_packages:
             packages_list.extend(extra_packages)
 
