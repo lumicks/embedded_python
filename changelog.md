@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.2 | 2021-06-15
+
+- Fixed `packages` option breaking if comments are present in the `requirements.txt` file
+
 ## v1.3.1 | 2021-06-04
 
 - Fixed very slow `find_package(Python)` on Windows

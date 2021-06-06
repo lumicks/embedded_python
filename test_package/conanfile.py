@@ -7,7 +7,7 @@ project_root = pathlib.Path(__file__).parent
 
 def _read_env(name):
     with open(project_root / f"envs/{name}.txt") as f:
-        return f.read()
+        return f.read().replace("\n", "\t")
 
 
 class TestEmbeddedPython(ConanFile):
