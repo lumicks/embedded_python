@@ -6,7 +6,7 @@ project_root = pathlib.Path(__file__).parent
 
 
 def _read_env(name):
-    with open(project_root / f"envs/{name}.txt") as f:
+    with open(project_root / f"{name}/env/{sys.platform}.txt") as f:
         return f.read().replace("\n", "\t")
 
 
@@ -36,24 +36,15 @@ class TestEmbeddedPython(ConanFile):
 
     def _test_env(self):
         """Ensure that Python runs and finds the installed environment"""
-        script = "import sys; print(sys.version);"
-        name = str(self.options.env)
-        if self.options.env:
-            script += f"import {name}; print('Found {name}');"
-
         if self.settings.os == "Windows":
             python_exe = str(pathlib.Path("./bin/python/python").resolve())
         else:
             python_exe = str(pathlib.Path("./bin/python/bin/python3").resolve())
-        self.run([python_exe, "-c", script])
 
-        if self.options.env:
-            test_path = project_root / f"envs/{name}_test.py"
-        else:
-            test_path = project_root / "envs/baseline_test.py"
+        self.run([python_exe, "-c", "import sys; print(sys.version);"])
 
-        if test_path.exists():
-            self.run([python_exe, str(test_path)]) 
+        name = str(self.options.env) if self.options.env else "baseline"
+        self.run([python_exe, str(project_root / f"{name}/test.py")]) 
 
     def _test_licenses(self):
         """Ensure that the licenses have been gathered"""

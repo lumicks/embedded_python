@@ -31,8 +31,6 @@ jobs:
         key: conan-cache-${{ runner.os }}-py${{ matrix.embedded-py }}-${{ hashFiles('conanfile.py', '**/test_package.yml') }}
     - name: Test baseline
       run: ${{ env.create_pck }}
-    - name: Test with pytest env
-      run: ${{ env.create_pck }} -o test_embedded_python:env=pytest
     - name: Test with numpy env
       run: ${{ env.create_pck }} -o test_embedded_python:env=numpy
     - name: Test with nbconvert env
