@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.3 | 2021-09-30
+
+- Fixed missing `lzma` module on some Linux systems (added `xz_utils` to the list of build requirements)
+
 ## v1.3.2 | 2021-06-15
 
 - Fixed `packages` option breaking if comments are present in the `requirements.txt` file
