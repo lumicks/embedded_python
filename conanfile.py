@@ -6,7 +6,7 @@ from conans import ConanFile, tools
 
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.3.2"  # of the Conan package, `options.version` is the Python version
+    version = "1.3.3"  # of the Conan package, `options.version` is the Python version
     description = "Embedded distribution of Python"
     url = "https://www.python.org/"
     license = "PSFL"
@@ -36,6 +36,7 @@ class EmbeddedPython(ConanFile):
 
         self.build_requires("sqlite3/3.35.5")
         self.build_requires("bzip2/1.0.8")
+        self.build_requires("xz_utils/5.2.5")
 
         # The pre-conan-center-index version of `openssl` was capitalized as `OpenSSL`.
         # Both versions can't live in the same Conan cache so we need this compatibility
