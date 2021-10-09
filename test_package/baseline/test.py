@@ -1,8 +1,10 @@
 import bz2
+import ctypes
+import _decimal
 import lzma
 import ssl
 import sqlite3
+import uuid
 import zlib
-import _decimal
 
 print("All optional Python features are importable")

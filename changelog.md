@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.4 | 2021-10-11
+
+- Fixed portability issues on Linux: use more dependencies from Conan instead of the host system
+
 ## v1.3.3 | 2021-09-30
 
 - Fixed missing `lzma` module on some Linux systems (added `xz_utils` to the list of build requirements)
