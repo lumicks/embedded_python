@@ -37,9 +37,9 @@ class EmbeddedPython(ConanFile):
         self.build_requires("sqlite3/3.35.5")
         self.build_requires("bzip2/1.0.8")
         self.build_requires("xz_utils/5.2.5")
-        self.build_requires("libffi/3.4.2")
         self.build_requires("mpdecimal/2.4.2")
         if self.settings.os == "Linux":
+            self.build_requires("libffi/3.4.2")
             self.build_requires("libuuid/1.0.3")
 
         # The pre-conan-center-index version of `openssl` was capitalized as `OpenSSL`.
