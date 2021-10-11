@@ -3,6 +3,7 @@
 ## v1.3.5 | 2021-10-12
 
 - Fixed issue with `pip-licenses` being incompatible with the newest `pip` version
+- Fixed `libffi` segfault on macOS: use CPython built-in `libffi` instead of the Conan version
 
 ## v1.3.4 | 2021-10-11
 
