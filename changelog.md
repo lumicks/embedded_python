@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.5 | 2021-10-12
+
+- Fixed issue with `pip-licenses` being incompatible with the newest `pip` version
+
 ## v1.3.4 | 2021-10-11
 
 - Fixed portability issues on Linux: use more dependencies from Conan instead of the host system

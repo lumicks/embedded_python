@@ -6,7 +6,7 @@ from conans import ConanFile, tools
 
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.3.4"  # of the Conan package, `options.version` is the Python version
+    version = "1.3.5"  # of the Conan package, `options.version` is the Python version
     description = "Embedded distribution of Python"
     url = "https://www.python.org/"
     license = "PSFL"
@@ -101,7 +101,7 @@ class EmbeddedPython(ConanFile):
         This will dump a bunch of packages into bootstrap but it doesn't matter since we 
         won't be using it for anything else afterward.
         """
-        requirements = self.make_requirements_file(extra_packages=["pip-licenses==2.2.0"])
+        requirements = self.make_requirements_file(extra_packages=["pip-licenses==3.5.3"])
         self.run(f"{bootstrap} -m pip install --no-warn-script-location -r {requirements}")
         self.run(f"{bootstrap} -m piplicenses --with-system --from=mixed --format=plain-vertical"
                  f" --with-license-file --no-license-path --output-file=package_licenses.txt")
