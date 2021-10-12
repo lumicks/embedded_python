@@ -6,7 +6,7 @@ from conans import ConanFile, tools
 
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.3.5"  # of the Conan package, `options.version` is the Python version
+    version = "1.4.0"  # of the Conan package, `options.version` is the Python version
     description = "Embedded distribution of Python"
     url = "https://www.python.org/"
     license = "PSFL"
@@ -14,10 +14,14 @@ class EmbeddedPython(ConanFile):
     options = {
         "version": "ANY", 
         "packages": "ANY", 
+        "pip_version": "ANY",
+        "pip_licenses_version": "ANY",
         "openssl_variant": ["lowercase", "uppercase"]  # see explanation in `build_requirements()`
     }
     default_options = {
         "packages": None,
+        "pip_version": "21.2.4",
+        "pip_licenses_version": "3.5.3",
         "openssl_variant": "lowercase"
     }
     exports = "embedded_python_tools.py", "embedded_python.cmake"
@@ -101,7 +105,7 @@ class EmbeddedPython(ConanFile):
         This will dump a bunch of packages into bootstrap but it doesn't matter since we 
         won't be using it for anything else afterward.
         """
-        requirements = self.make_requirements_file(extra_packages=["pip-licenses==3.5.3"])
+        requirements = self.make_requirements_file(extra_packages=[f"pip-licenses=={self.options.pip_licenses_version}"])
         self.run(f"{bootstrap} -m pip install --no-warn-script-location -r {requirements}")
         self.run(f"{bootstrap} -m piplicenses --with-system --from=mixed --format=plain-vertical"
                  f" --with-license-file --no-license-path --output-file=package_licenses.txt")
@@ -186,6 +190,7 @@ class WindowsBuildHelper:
         python_exe = build_folder / "bootstrap/python.exe"
         tools.download("https://bootstrap.pypa.io/get-pip.py", filename="get-pip.py")
         self.conanfile.run(f"{python_exe} get-pip.py")
+        self.conanfile.run(f"{python_exe} -m pip install -U pip=={self.conanfile.options.pip_version}")
 
         return python_exe
 
@@ -236,7 +241,7 @@ class UnixLikeBuildHelper:
 
         ver = ".".join(self.conanfile.pyversion.split(".")[:2])
         exe = str(dest_dir / f"bin/python{ver}")
-        self.conanfile.run(f"{exe} -m pip install -U pip==21.1.1")
+        self.conanfile.run(f"{exe} -m pip install -U pip=={self.conanfile.options.pip_version}")
 
         # Move the license file to match the Windows layout
         lib_dir = dest_dir / "lib"

@@ -1,7 +1,9 @@
 # Changelog
 
-## v1.3.5 | 2021-10-12
+## v1.4.0 | 2021-10-12
 
+- The versions of `pip` and `pip-licenses` used to build the embedded environment are now user-configurable via the `pip_version` and `pip_licenses_version` recipe options.
+  If not given, they default to `pip==21.2.4` and `pip-licenses==3.5.3`.
 - Fixed issue with `pip-licenses` being incompatible with the newest `pip` version
 - Fixed `libffi` segfault on macOS: use CPython built-in `libffi` instead of the Conan version
 
