@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.3 | 2022-01-28
+
+- Worked around a CPython issue that prevented compilation of Python < 3.9.8 with clang 13: https://bugs.python.org/issue45405
+
 ## v1.4.2 | 2021-11-22
 
 - Fixed missing `zlib` module on some Linux systems (added `zlib` to the list of build requirements)
