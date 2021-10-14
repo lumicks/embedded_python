@@ -6,7 +6,7 @@ from conans import ConanFile, tools
 # noinspection PyUnresolvedReferences
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.4.2"  # of the Conan package, `options.version` is the Python version
+    version = "1.4.3"  # of the Conan package, `options.version` is the Python version
     license = "PSFL"
     description = "Embedded distribution of Python"
     topics = "embedded", "python"
@@ -217,6 +217,17 @@ class UnixLikeBuildHelper:
         url = f"https://github.com/python/cpython/archive/v{self.conanfile.pyversion}.tar.gz"
         tools.get(url)
         os.rename(f"cpython-{self.conanfile.pyversion}", "src")
+
+        # Patch a build issue with clang 13: https://bugs.python.org/issue45405. We simply apply
+        # the patch for all clang versions since the flag never did anything on clang anyway.
+        compiler = self.conanfile.settings.compiler
+        if compiler == "clang" and tools.Version(self.conanfile.pyversion) < "3.9.8":
+            tools.replace_in_file(
+                "src/configure", 
+                "MULTIARCH=$($CC --print-multiarch 2>/dev/null)", 
+                "MULTIARCH=''",
+                strict=False,
+            )
 
     @property
     def _openssl_path(self):
