@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.1 | 2021-11-05
+
+- The versions of `setuptools` and `wheel` used to build the embedded environment are now user-configurable via the `setuptools_version` and `wheel_version` recipe options
+
 ## v1.4.0 | 2021-10-12
 
 - The versions of `pip` and `pip-licenses` used to build the embedded environment are now user-configurable via the `pip_version` and `pip_licenses_version` recipe options.
