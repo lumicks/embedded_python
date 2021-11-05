@@ -17,6 +17,7 @@ class EmbeddedPython(ConanFile):
         "pip_version": "ANY",
         "pip_licenses_version": "ANY",
         "setuptools_version": "ANY",
+        "wheel_version": "ANY",
         "openssl_variant": ["lowercase", "uppercase"]  # see explanation in `build_requirements()`
     }
     default_options = {
@@ -24,6 +25,7 @@ class EmbeddedPython(ConanFile):
         "pip_version": "21.2.4",
         "pip_licenses_version": "3.5.3",
         "setuptools_version": "57.5.0",
+        "wheel_version": "0.37.0",
         "openssl_variant": "lowercase"
     }
     exports = "embedded_python_tools.py", "embedded_python.cmake"
@@ -196,6 +198,7 @@ class WindowsBuildHelper:
         specs = [
             f"pip=={self.conanfile.options.pip_version}",
             f"setuptools=={self.conanfile.options.setuptools_version}",
+            f"wheel=={self.conanfile.options.wheel_version}",
         ]
         self.conanfile.run(f"{python_exe} -m pip install -U {' '.join(specs)}")
 
@@ -252,6 +255,7 @@ class UnixLikeBuildHelper:
         specs = [
             f"pip=={self.conanfile.options.pip_version}",
             f"setuptools=={self.conanfile.options.setuptools_version}",
+            f"wheel=={self.conanfile.options.wheel_version}",
         ]
         self.conanfile.run(f"{exe} -m pip install -U {' '.join(specs)}")
 
