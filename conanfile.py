@@ -6,7 +6,7 @@ from conans import ConanFile, tools
 
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.4.1"  # of the Conan package, `options.version` is the Python version
+    version = "1.4.2"  # of the Conan package, `options.version` is the Python version
     description = "Embedded distribution of Python"
     url = "https://www.python.org/"
     license = "PSFL"
@@ -46,6 +46,7 @@ class EmbeddedPython(ConanFile):
         self.build_requires("bzip2/1.0.8")
         self.build_requires("xz_utils/5.2.5")
         self.build_requires("mpdecimal/2.4.2")
+        self.build_requires("zlib/1.2.11")
         if self.settings.os == "Linux":
             self.build_requires("libffi/3.4.2")
             self.build_requires("libuuid/1.0.3")

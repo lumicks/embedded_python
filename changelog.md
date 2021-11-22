@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.2 | 2021-11-22
+
+- Fixed missing `zlib` module on some Linux systems (added `zlib` to the list of build requirements)
+
 ## v1.4.1 | 2021-11-05
 
 - The versions of `setuptools` and `wheel` used to build the embedded environment are now user-configurable via the `setuptools_version` and `wheel_version` recipe options
