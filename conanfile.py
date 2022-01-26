@@ -39,6 +39,12 @@ class EmbeddedPython(ConanFile):
             del self.settings.compiler
             del self.settings.build_type
 
+    def configure(self):
+        """We only use the C compiler so ensure we don't need to rebuild if C++ settings change"""
+        if self.settings.os != "Windows":
+            del self.settings.compiler.cppstd
+            del self.settings.compiler.libcxx
+
     def build_requirements(self):
         """On Windows, we download a binary so we don't need anything else"""
         if self.settings.os == "Windows":

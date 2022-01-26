@@ -3,6 +3,7 @@
 ## v1.4.3 | 2022-01-28
 
 - Worked around a CPython issue that prevented compilation of Python < 3.9.8 with clang 13: https://bugs.python.org/issue45405
+- The recipe no longer depends on `compiler.cppstd` and `compiler.libcxx` so C++ settings changes will not cause a package rebuild
 
 ## v1.4.2 | 2021-11-22
 
