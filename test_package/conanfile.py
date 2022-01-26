@@ -10,6 +10,7 @@ def _read_env(name):
         return f.read().replace("\n", "\t")
 
 
+# noinspection PyUnresolvedReferences
 class TestEmbeddedPython(ConanFile):
     name = "test_embedded_python"
     settings = "os"
