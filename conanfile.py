@@ -1,15 +1,17 @@
 import os
 import pathlib
-import shutil
 from conans import ConanFile, tools
 
 
+# noinspection PyUnresolvedReferences
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
     version = "1.4.2"  # of the Conan package, `options.version` is the Python version
-    description = "Embedded distribution of Python"
-    url = "https://www.python.org/"
     license = "PSFL"
+    description = "Embedded distribution of Python"
+    topics = "embedded", "python"
+    homepage = "https://www.python.org/"
+    url = "https://github.com/lumicks/embedded_python"
     settings = "os", "compiler", "build_type", "arch"
     options = {
         "version": "ANY", 
