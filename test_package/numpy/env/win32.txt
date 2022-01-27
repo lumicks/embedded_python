@@ -1,30 +1,28 @@
 atomicwrites==1.4.0
     # via pytest
-attrs==21.2.0
-    # via pytest
+attrs==21.4.0
+    # via
+    #   hypothesis
+    #   pytest
 colorama==0.4.4
     # via pytest
-importlib-metadata==4.5.0
-    # via
-    #   pluggy
-    #   pytest
-more-itertools==8.8.0
-    # via pytest
-numpy==1.18.5
+hypothesis==6.36.0
     # via -r test_package\numpy\requirements.txt
-packaging==20.9
+iniconfig==1.1.1
     # via pytest
-pluggy==0.13.1
+numpy==1.22.1
+    # via -r test_package\numpy\requirements.txt
+packaging==21.3
     # via pytest
-py==1.10.0
+pluggy==1.0.0
     # via pytest
-pyparsing==2.4.7
+py==1.11.0
+    # via pytest
+pyparsing==3.0.7
     # via packaging
-pytest==5.4.3
+pytest==6.2.5
     # via -r test_package\numpy\requirements.txt
-typing-extensions==3.10.0.0
-    # via importlib-metadata
-wcwidth==0.2.5
+sortedcontainers==2.4.0
+    # via hypothesis
+toml==0.10.2
     # via pytest
-zipp==3.4.1
-    # via importlib-metadata
