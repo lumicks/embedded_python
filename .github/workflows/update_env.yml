@@ -1,10 +1,20 @@
 name: update_env
 
-on: push
+on:
+  workflow_dispatch:
+  push:
+    paths:
+    - "test_package/*/requirements.txt"
+    branches-ignore:
+    - "main"
 
 jobs:
   compile:
-    if: "contains(github.event.head_commit.message, '[update-env]')"
+    # We only get to this `if` statement when `requirements.txt` is part of the job's git diff.
+    # `event.commits` contains a max of 20 most recent commit messages. If it contains that many,
+    # this is either a giant branch/PR (>=20 commits) or a rebase of a very old branch.
+    if: ${{ !github.event.forced && github.event.commits[19] == null
+            && !contains(github.event.commits.*.author.name, 'update-env') }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -13,10 +23,10 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
       with:
-        python-version: 3.7
+        python-version: 3.9
     - name: Compile
       run: |
-        python -m pip install pip-tools==6.1.0
+        python -m pip install pip-tools==6.4.0
         python .github/workflows/update_env.py compile
     - uses: actions/upload-artifact@v2
       with:
