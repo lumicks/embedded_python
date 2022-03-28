@@ -6,7 +6,7 @@ from conans import ConanFile, tools
 # noinspection PyUnresolvedReferences
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.4.3"  # of the Conan package, `options.version` is the Python version
+    version = "1.4.4"  # of the Conan package, `options.version` is the Python version
     license = "PSFL"
     description = "Embedded distribution of Python"
     topics = "embedded", "python"
@@ -168,9 +168,8 @@ class WindowsBuildHelper:
 
     def _get_headers_and_lib(self, dest_dir):
         """We also need headers and the `python3.lib` file to link against"""
-        url = "https://www.python.org/ftp/python/{0}/python-{0}-amd64-webinstall.exe"
-        tools.download(url.format(self.conanfile.pyversion), filename="tmp\\installer.exe")
-        self.conanfile.run("tmp\\installer.exe /quiet /layout")
+        url = f"https://www.python.org/ftp/python/{self.conanfile.pyversion}/amd64/dev.msi"
+        tools.download(url, filename="tmp\\dev.msi")
         build_folder = self.conanfile.build_folder
         self.conanfile.run(f"msiexec.exe /a {build_folder}\\tmp\\dev.msi targetdir={dest_dir}")
         tools.rmdir("tmp")
