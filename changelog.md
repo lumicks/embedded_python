@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.4 | In development
+
+- Fixed build with Python >= 3.9.11 and >= 3.10.3 on Windows (the installer changed)
+
 ## v1.4.3 | 2022-01-28
 
 - Worked around a CPython issue that prevented compilation of Python < 3.9.8 with clang 13: https://bugs.python.org/issue45405
