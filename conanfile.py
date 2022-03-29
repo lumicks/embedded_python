@@ -157,6 +157,12 @@ class EmbeddedPython(ConanFile):
         self.cpp_info.build_modules = ["embedded_python.cmake"]
         self.user_info.pyversion = self.pyversion
 
+        prefix = pathlib.Path(self.package_folder) / "embedded_python"
+        if self.settings.os == "Windows":
+            self.cpp_info.bindirs = [str(prefix)]
+        else:
+            self.cpp_info.libdirs = [str(prefix / "lib")]
+
 
 class WindowsBuildHelper:
     def __init__(self, conanfile, prefix_dir):

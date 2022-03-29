@@ -1,9 +1,10 @@
 # Changelog
 
-## v1.4.4 | In development
+## v1.4.4 | 2022-03-30
 
 - Fixed build with Python >= 3.9.11 and >= 3.10.3 on Windows (the installer changed)
 - Fixed configuration with the Conan `cmake_find_package` generator
+- Fixed Conan's `.run(..., run_environment=True)` not setting binary/library paths
 
 ## v1.4.3 | 2022-01-28
 
