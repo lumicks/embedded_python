@@ -13,7 +13,7 @@ def _read_env(name):
 # noinspection PyUnresolvedReferences
 class TestEmbeddedPython(ConanFile):
     name = "test_embedded_python"
-    settings = "os"
+    settings = "os", "compiler", "build_type", "arch"
     generators = "cmake", "cmake_find_package"
     options = {"env": "ANY"}
     default_options = {
@@ -45,7 +45,11 @@ class TestEmbeddedPython(ConanFile):
         self.run([python_exe, "-c", "import sys; print(sys.version);"])
 
         name = str(self.options.env) if self.options.env else "baseline"
-        self.run([python_exe, str(project_root / f"{name}/test.py")]) 
+        self.run([python_exe, str(project_root / f"{name}/test.py")], run_environment=True)
+
+    def _test_embed(self):
+        """Ensure that everything is available to compile and link to the embedded Python"""
+        self.run(pathlib.Path("bin", "test_package"), run_environment=True)
 
     def _test_licenses(self):
         """Ensure that the licenses have been gathered"""
@@ -59,4 +63,5 @@ class TestEmbeddedPython(ConanFile):
 
     def test(self):
         self._test_env()
+        self._test_embed()
         self._test_licenses()
