@@ -14,7 +14,7 @@ def _read_env(name):
 class TestEmbeddedPython(ConanFile):
     name = "test_embedded_python"
     settings = "os"
-    generators = "cmake"
+    generators = "cmake", "cmake_find_package"
     options = {"env": "ANY"}
     default_options = {
         "env": None,

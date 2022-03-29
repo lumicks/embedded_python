@@ -3,6 +3,7 @@
 ## v1.4.4 | In development
 
 - Fixed build with Python >= 3.9.11 and >= 3.10.3 on Windows (the installer changed)
+- Fixed configuration with the Conan `cmake_find_package` generator
 
 ## v1.4.3 | 2022-01-28
 
