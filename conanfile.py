@@ -124,6 +124,8 @@ class EmbeddedPython(ConanFile):
                  f" --with-license-file --no-license-path --output-file=package_licenses.txt")
 
     def build(self):
+        tools.replace_in_file("embedded_python.cmake", "${self.pyversion}", str(self.pyversion))
+
         prefix = pathlib.Path(self.build_folder) / "embedded_python"
         if self.settings.os == "Windows":
             build_helper = WindowsBuildHelper(self, prefix)
