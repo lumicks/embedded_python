@@ -25,7 +25,7 @@ class EmbeddedPython(ConanFile):
     default_options = {
         "packages": None,
         "pip_version": "21.2.4",
-        "pip_licenses_version": "3.5.3",
+        "pip_licenses_version": "3.5.4",
         "setuptools_version": "57.5.0",
         "wheel_version": "0.37.0",
         "openssl_variant": "lowercase"
