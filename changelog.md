@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.5 | In development
+
+- Fixed license collection failing with some packages on Windows (bumped default `pip-licenses` to v3.5.4 with the bug fix) 
+
 ## v1.4.4 | 2022-03-30
 
 - Fixed build with Python >= 3.9.11 and >= 3.10.3 on Windows (the installer changed)
