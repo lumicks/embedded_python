@@ -6,7 +6,7 @@ from conans import ConanFile, tools
 # noinspection PyUnresolvedReferences
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.4.4"  # of the Conan package, `options.version` is the Python version
+    version = "1.4.5"  # of the Conan package, `options.version` is the Python version
     license = "PSFL"
     description = "Embedded distribution of Python"
     topics = "embedded", "python"
@@ -24,10 +24,10 @@ class EmbeddedPython(ConanFile):
     }
     default_options = {
         "packages": None,
-        "pip_version": "21.2.4",
+        "pip_version": "22.1.2",
         "pip_licenses_version": "3.5.4",
-        "setuptools_version": "57.5.0",
-        "wheel_version": "0.37.0",
+        "setuptools_version": "63.2.0",
+        "wheel_version": "0.37.1",
         "openssl_variant": "lowercase"
     }
     exports = "embedded_python_tools.py", "embedded_python.cmake"

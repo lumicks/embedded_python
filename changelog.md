@@ -1,8 +1,9 @@
 # Changelog
 
-## v1.4.5 | In development
+## v1.4.5 | 2022-07-15
 
 - Fixed license collection failing with some packages on Windows (bumped default `pip-licenses` to v3.5.4 with the bug fix) 
+- Updated default recipe options to  `pip` v22.1.2, `setuptools` v63.2.0, and `wheel` v0.37.1 to improve compatibility with the latest PyPI packages
 
 ## v1.4.4 | 2022-03-30
 
