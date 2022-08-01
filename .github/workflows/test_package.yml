@@ -9,6 +9,11 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
         embedded-py: [3.8.10, 3.10.4]
+        target_arch: [x86_64]
+        include:
+          - target_arch: armv8
+            os: macos-latest
+            embedded-py: 3.10.4
     env:
       create_pck: conan create . lumicks/testing -o embedded_python:version=${{ matrix.embedded-py }} --build=missing
     steps:
@@ -23,6 +28,9 @@ jobs:
         conan config set general.revisions_enabled=True
         conan profile new default --detect
         conan profile update settings.compiler.cppstd=17 default
+    - name: Update arch to arm for MacOS
+      if: ${{ matrix.target_arch }}
+      run: conan profile update settings.arch=${{ matrix.target_arch }} default
     - name: Conan cache
       uses: actions/cache@v2
       with:

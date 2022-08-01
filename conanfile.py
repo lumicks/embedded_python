@@ -264,6 +264,12 @@ class UnixLikeBuildHelper:
         if self.conanfile.settings.os == "Linux":
             env_vars["LDFLAGS"] += " -Wl,-rpath,'$$ORIGIN/../lib' -Wl,--disable-new-dtags"
         
+        # the CFLAGS are updated but not the LDFLAGS while cross compiling
+        # https://github.com/conan-io/conan/issues/9252
+        arch_flag = f"-arch {self.conanfile.settings.arch}"
+        if self.conanfile.settings.os == "Macos" and arch_flag not in env_vars["LDFLAGS"]:
+            env_vars["LDFLAGS"] += f" {arch_flag}"
+
         config_args = " ".join([
             "--enable-shared",
             f"--prefix={dest_dir}",
