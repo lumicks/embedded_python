@@ -3,6 +3,7 @@
 ## v1.4.6 | In progress
 
 - Fixed symlink re-creation, in case already existing symlink was invalid
+- Worked around problem in propagation of LDFLAGS down to autotools, relevant when cross-compiling.
 
 ## v1.4.5 | 2022-07-15
 

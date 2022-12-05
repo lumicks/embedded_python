@@ -263,7 +263,15 @@ class UnixLikeBuildHelper:
         # package. Unlike RUNPATH, RPATH takes precedence over LD_LIBRARY_PATH.
         if self.conanfile.settings.os == "Linux":
             env_vars["LDFLAGS"] += " -Wl,-rpath,'$$ORIGIN/../lib' -Wl,--disable-new-dtags"
-        
+        elif self.conanfile.settings.os == "Macos":
+            # AutoToolsBuildEnvironment does not propagate LDFLAGS
+            # https://github.com/conan-io/conan/issues/9252
+            arch = {
+                "armv8": "arm64",
+                "x86_64": "x86_64",
+            }.get(str(self.conanfile.settings.arch), str(self.conanfile.settings.arch))
+            env_vars["LDFLAGS"] += " -arch " + arch
+
         config_args = " ".join([
             "--enable-shared",
             f"--prefix={dest_dir}",
