@@ -40,7 +40,9 @@ def symlink_import(conanfile, dst="bin/python/interpreter", bin="bin"):
     if not dst.parent.exists():
         dst.parent.mkdir(parents=True)
 
-    if dst.exists():
+    # Clean the `dst` path if it already exists
+    # Note: we use `os.path.lexists` here specifically to also detect and clean up old broken symlinks
+    if os.path.lexists(dst):
         try:  # to remove any existing junction/symlink
             os.remove(dst)
         except:  # this seems to be the only way to find out this is not a junction 

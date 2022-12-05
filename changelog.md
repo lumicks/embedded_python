@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.6 | In progress
+
+- Fixed symlink re-creation, in case already existing symlink was invalid
+
 ## v1.4.5 | 2022-07-15
 
 - Fixed license collection failing with some packages on Windows (bumped default `pip-licenses` to v3.5.4 with the bug fix) 
