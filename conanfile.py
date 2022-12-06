@@ -232,9 +232,9 @@ class UnixLikeBuildHelper:
         os.rename(f"cpython-{self.conanfile.pyversion}", "src")
 
         # Patch a build issue with clang 13: https://bugs.python.org/issue45405. We simply apply
-        # the patch for all clang versions since the flag never did anything on clang anyway.
+        # the patch for all clang versions since the flag never did anything on clang/apple-clang anyway.
         compiler = self.conanfile.settings.compiler
-        if compiler == "clang" and tools.Version(self.conanfile.pyversion) < "3.9.8":
+        if "clang" in str(compiler) and tools.Version(self.conanfile.pyversion) < "3.9.8":
             tools.replace_in_file(
                 "src/configure", 
                 "MULTIARCH=$($CC --print-multiarch 2>/dev/null)", 
