@@ -1,6 +1,7 @@
 import os
 import shutil
 import pathlib
+from conan.tools.files import copy
 
 
 def _symlink_compat(conanfile, src, dst):
@@ -52,7 +53,7 @@ def symlink_import(conanfile, dst="bin/python/interpreter", bin="bin"):
     _symlink_compat(conanfile, src, dst)
 
     bin = pathlib.Path(bin).absolute()
-    conanfile.copy("python*.dll", dst=bin, src="embedded_python", keep_path=False)
-    conanfile.copy("libpython*.so*", dst=bin, src="embedded_python/lib", keep_path=False)
-    conanfile.copy("libpython*.dylib", dst=bin, src="embedded_python/lib", keep_path=False)
-    conanfile.copy("python*.zip", dst=bin, src="embedded_python", keep_path=False)
+    copy(conanfile, "python*.dll", src, bin, keep_path=False)
+    copy(conanfile, "libpython*.so*", src / "lib", bin, keep_path=False)
+    copy(conanfile, "libpython*.dylib", src / "lib", bin, keep_path=False)
+    copy(conanfile, "python*.zip", src, bin, keep_path=False)

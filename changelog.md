@@ -1,8 +1,9 @@
 # Changelog
 
-## v1.4.6 | In progress
+## v1.5.0 | 2023-02-28
 
 - Fixed symlink re-creation, in case already existing symlink was invalid
+- Updated to conan v2 methods
 
 ## v1.4.5 | 2022-07-15
 
