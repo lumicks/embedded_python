@@ -1,6 +1,7 @@
 import pathlib
 import sys
-from conans import ConanFile, CMake
+from conan import ConanFile
+from conan.tools.cmake import CMake, CMakeToolchain
 
 project_root = pathlib.Path(__file__).parent
 
@@ -14,7 +15,7 @@ def _read_env(name):
 class TestEmbeddedPython(ConanFile):
     name = "test_embedded_python"
     settings = "os", "compiler", "build_type", "arch"
-    generators = "cmake", "cmake_find_package"
+    generators = "CMakeDeps"
     options = {"env": "ANY"}
     default_options = {
         "env": None,
@@ -25,13 +26,17 @@ class TestEmbeddedPython(ConanFile):
         if self.options.env:
             self.options["embedded_python"].packages = _read_env(self.options.env)
 
-    def imports(self):
+    def generate(self):
+        build_type = self.settings.build_type.value
+        tc = CMakeToolchain(self)
+        tc.variables[f"CMAKE_RUNTIME_OUTPUT_DIRECTORY_{build_type.upper()}"] = "bin"
+        tc.generate()
+
+    def build(self):
         import embedded_python_tools
 
         embedded_python_tools.symlink_import(self, dst="bin/python")
-        self.copy("licenses/*", dst="licenses", folder=True, ignore_case=True, keep_path=False)
 
-    def build(self):
         cmake = CMake(self)
         cmake.configure()
         cmake.build()
@@ -43,10 +48,10 @@ class TestEmbeddedPython(ConanFile):
         else:
             python_exe = str(pathlib.Path("./bin/python/bin/python3").resolve())
 
-        self.run([python_exe, "-c", "import sys; print(sys.version);"])
+        self.run(f'{python_exe} -c "import sys; print(sys.version);"')
 
         name = str(self.options.env) if self.options.env else "baseline"
-        self.run([python_exe, str(project_root / f"{name}/test.py")], run_environment=True)
+        self.run(f"{python_exe} {project_root / name / 'test.py'}", run_environment=True)
 
     def _test_embed(self):
         """Ensure that everything is available to compile and link to the embedded Python"""
@@ -54,7 +59,7 @@ class TestEmbeddedPython(ConanFile):
 
     def _test_licenses(self):
         """Ensure that the licenses have been gathered"""
-        license_dir = pathlib.Path("./licenses/embedded_python")
+        license_dir = pathlib.Path(self.deps_cpp_info["embedded_python"].rootpath, "licenses")
         license_files = [license_dir / "LICENSE.txt"]
         if self.options.env:
             license_files += [license_dir / "package_licenses.txt"]
