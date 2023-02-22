@@ -45,7 +45,7 @@ def symlink_import(conanfile, dst="bin/python/interpreter", bin="bin"):
     if os.path.lexists(dst):
         try:  # to remove any existing junction/symlink
             os.remove(dst)
-        except:  # this seems to be the only way to find out this is not a junction 
+        except:  # this seems to be the only way to find out this is not a junction
             shutil.rmtree(dst)
 
     src = pathlib.Path(conanfile.deps_cpp_info["embedded_python"].rootpath) / "embedded_python"

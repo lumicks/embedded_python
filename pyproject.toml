@@ -1,0 +1,11 @@
+[tool.black]
+line-length = 100
+target-version = ['py39']
+extend-exclude = '''
+(
+  /(
+      \.git
+    | \.github
+  )/
+)
+'''
