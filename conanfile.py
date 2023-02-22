@@ -14,13 +14,13 @@ class EmbeddedPython(ConanFile):
     url = "https://github.com/lumicks/embedded_python"
     settings = "os", "compiler", "build_type", "arch"
     options = {
-        "version": "ANY", 
-        "packages": "ANY", 
+        "version": "ANY",
+        "packages": "ANY",
         "pip_version": "ANY",
         "pip_licenses_version": "ANY",
         "setuptools_version": "ANY",
         "wheel_version": "ANY",
-        "openssl_variant": ["lowercase", "uppercase"]  # see explanation in `build_requirements()`
+        "openssl_variant": ["lowercase", "uppercase"],  # see explanation in `build_requirements()`
     }
     default_options = {
         "packages": None,
@@ -28,7 +28,7 @@ class EmbeddedPython(ConanFile):
         "pip_licenses_version": "3.5.4",
         "setuptools_version": "63.2.0",
         "wheel_version": "0.37.1",
-        "openssl_variant": "lowercase"
+        "openssl_variant": "lowercase",
     }
     exports = "embedded_python_tools.py", "embedded_python.cmake"
     short_paths = True  # some of the pip packages go over the 260 char path limit on Windows
@@ -80,19 +80,20 @@ class EmbeddedPython(ConanFile):
 
     def make_requirements_file(self, extra_packages=None):
         """Create a `requirements.txt` based on `self.options.packages` and return its path
-        
+
         We accept `self.options.packages` as either a space-separated list of packages (as
         you would pass to `pip install <packages>`) or the full contents of a `requirements.txt`
         file (as you would pass to `pip install -r <file>`). But in either case, we generate
         a `requirements.txt` file internally for installation.
 
-        The `extra_packages` can be used to add extra packages (as a Python `list`) to be 
+        The `extra_packages` can be used to add extra packages (as a Python `list`) to be
         installed in addition to `self.options.packages`.
         """
+
         def split_lines(string):
             """`options.packages` may be encoded as tab, newline or space separated
 
-            The `\n` separator doesn't play well with Conan but we need to support 
+            The `\n` separator doesn't play well with Conan but we need to support
             it for backward compatibility.
             """
             for separator in ["\t", "\n"]:
@@ -115,13 +116,17 @@ class EmbeddedPython(ConanFile):
 
         We can't run `pip-licenses` in the final environment because it doesn't have `pip`.
         So we install the same packages in the bootstrap env and run `pip-licenses` there.
-        This will dump a bunch of packages into bootstrap but it doesn't matter since we 
+        This will dump a bunch of packages into bootstrap but it doesn't matter since we
         won't be using it for anything else afterward.
         """
-        requirements = self.make_requirements_file(extra_packages=[f"pip-licenses=={self.options.pip_licenses_version}"])
+        requirements = self.make_requirements_file(
+            extra_packages=[f"pip-licenses=={self.options.pip_licenses_version}"]
+        )
         self.run(f"{bootstrap} -m pip install --no-warn-script-location -r {requirements}")
-        self.run(f"{bootstrap} -m piplicenses --with-system --from=mixed --format=plain-vertical"
-                 f" --with-license-file --no-license-path --output-file=package_licenses.txt")
+        self.run(
+            f"{bootstrap} -m piplicenses --with-system --from=mixed --format=plain-vertical"
+            f" --with-license-file --no-license-path --output-file=package_licenses.txt"
+        )
 
     def build(self):
         tools.replace_in_file("embedded_python.cmake", "${self.pyversion}", str(self.pyversion))
@@ -141,9 +146,13 @@ class EmbeddedPython(ConanFile):
         self._gather_licenses(bootstrap)
 
         # Some modules always assume that `setuptools` is installed (e.g. pytest)
-        requirements = self.make_requirements_file(extra_packages=[f"setuptools=={self.options.setuptools_version}"])
+        requirements = self.make_requirements_file(
+            extra_packages=[f"setuptools=={self.options.setuptools_version}"]
+        )
         options = "--ignore-installed --no-warn-script-location"
-        self.run(f'{bootstrap} -m pip install --no-deps --prefix "{prefix}" {options} -r {requirements}')
+        self.run(
+            f'{bootstrap} -m pip install --no-deps --prefix "{prefix}" {options} -r {requirements}'
+        )
 
     def package(self):
         self.copy("embedded_python/*", keep_path=True)
@@ -236,8 +245,8 @@ class UnixLikeBuildHelper:
         compiler = self.conanfile.settings.compiler
         if "clang" in str(compiler) and tools.Version(self.conanfile.pyversion) < "3.9.8":
             tools.replace_in_file(
-                "src/configure", 
-                "MULTIARCH=$($CC --print-multiarch 2>/dev/null)", 
+                "src/configure",
+                "MULTIARCH=$($CC --print-multiarch 2>/dev/null)",
                 "MULTIARCH=''",
                 strict=False,
             )
@@ -263,12 +272,14 @@ class UnixLikeBuildHelper:
         # package. Unlike RUNPATH, RPATH takes precedence over LD_LIBRARY_PATH.
         if self.conanfile.settings.os == "Linux":
             env_vars["LDFLAGS"] += " -Wl,-rpath,'$$ORIGIN/../lib' -Wl,--disable-new-dtags"
-        
-        config_args = " ".join([
-            "--enable-shared",
-            f"--prefix={dest_dir}",
-            f"--with-openssl={self._openssl_path}",
-        ])
+
+        config_args = " ".join(
+            [
+                "--enable-shared",
+                f"--prefix={dest_dir}",
+                f"--with-openssl={self._openssl_path}",
+            ]
+        )
 
         tools.mkdir("./build")
         with tools.chdir("./build"), tools.environment_append(env_vars):

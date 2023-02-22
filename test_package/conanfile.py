@@ -27,6 +27,7 @@ class TestEmbeddedPython(ConanFile):
 
     def imports(self):
         import embedded_python_tools
+
         embedded_python_tools.symlink_import(self, dst="bin/python")
         self.copy("licenses/*", dst="licenses", folder=True, ignore_case=True, keep_path=False)
 
