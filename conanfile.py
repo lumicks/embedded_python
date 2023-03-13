@@ -10,7 +10,7 @@ required_conan_version = ">=1.56.0"
 # noinspection PyUnresolvedReferences
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.5.0"  # of the Conan package, `options.version` is the Python version
+    version = "1.5.1"  # of the Conan package, `options.version` is the Python version
     license = "PSFL"
     description = "Embedded distribution of Python"
     topics = "embedded", "python"
@@ -36,6 +36,7 @@ class EmbeddedPython(ConanFile):
     }
     exports = "embedded_python_tools.py", "embedded_python.cmake"
     short_paths = True  # some of the pip packages go over the 260 char path limit on Windows
+    build_helper = None
 
     def config_options(self):
         """On Windows, we download a binary so these options have no effect"""
@@ -135,21 +136,29 @@ class EmbeddedPython(ConanFile):
             f" --with-license-file --no-license-path --output-file=package_licenses.txt"
         )
 
-    def build(self):
+    def source(self):
         replace_in_file(self, "embedded_python.cmake", "${self.pyversion}", str(self.pyversion))
 
+        if self.settings.os != "Windows":
+            UnixLikeBuildHelper.get_source(self)
+
+    def generate(self):
         prefix = pathlib.Path(self.build_folder) / "embedded_python"
         if self.settings.os == "Windows":
-            build_helper = WindowsBuildHelper(self, prefix)
+            self.build_helper = WindowsBuildHelper(self, prefix)
         else:
-            build_helper = UnixLikeBuildHelper(self, prefix)
-        build_helper.build_embedded()
+            self.build_helper = UnixLikeBuildHelper(self, prefix)
+            self.build_helper.generate()
+
+    def build(self):
+        self.build_helper.build()
+        self.build_helper.install()
 
         if not self.options.packages:
             return
 
-        build_helper.enable_site_packages()
-        bootstrap = build_helper.build_bootstrap()
+        self.build_helper.enable_site_packages()
+        bootstrap = self.build_helper.build_bootstrap()
         self._gather_licenses(bootstrap)
 
         # Some modules always assume that `setuptools` is installed (e.g. pytest)
@@ -158,7 +167,7 @@ class EmbeddedPython(ConanFile):
         )
         options = "--ignore-installed --no-warn-script-location"
         self.run(
-            f'{bootstrap} -m pip install --no-deps --prefix "{prefix}" {options} -r {requirements}'
+            f'{bootstrap} -m pip install --no-deps --prefix "{self.build_helper.prefix}" {options} -r {requirements}'
         )
 
     def package(self):
@@ -181,30 +190,33 @@ class EmbeddedPython(ConanFile):
 
 
 class WindowsBuildHelper:
-    def __init__(self, conanfile, prefix_dir):
+    def __init__(self, conanfile, prefix):
         self.conanfile = conanfile
-        self.prefix_dir = prefix_dir
+        self.prefix = prefix
 
-    def _get_binaries(self, dest_dir):
+    def _get_binaries(self, prefix):
         """Get the binaries from the special embeddable Python package"""
         url = "https://www.python.org/ftp/python/{0}/python-{0}-embed-amd64.zip"
-        get(self.conanfile, url.format(self.conanfile.pyversion), destination=dest_dir)
+        get(self.conanfile, url.format(self.conanfile.pyversion), destination=prefix)
 
-    def _get_headers_and_lib(self, dest_dir):
+    def _get_headers_and_lib(self):
         """We also need headers and the `python3.lib` file to link against"""
         url = f"https://www.python.org/ftp/python/{self.conanfile.pyversion}/amd64/dev.msi"
         download(self.conanfile, url, filename="tmp\\dev.msi")
         build_folder = self.conanfile.build_folder
-        self.conanfile.run(f"msiexec.exe /a {build_folder}\\tmp\\dev.msi targetdir={dest_dir}")
+        self.conanfile.run(f"msiexec.exe /a {build_folder}\\tmp\\dev.msi targetdir={self.prefix}")
         rmdir(self.conanfile, "tmp")
 
-    def build_embedded(self):
-        self._get_binaries(self.prefix_dir)
-        self._get_headers_and_lib(self.prefix_dir)
+    def build(self):
+        self._get_binaries(self.prefix)
+        self._get_headers_and_lib()
+
+    def install(self):
+        pass
 
     def enable_site_packages(self):
         """Enable site-packages, i.e. additional non-system packages"""
-        dst = self.prefix_dir / f"python{self.conanfile.pyver}._pth"
+        dst = self.prefix / f"python{self.conanfile.pyver}._pth"
         replace_in_file(self.conanfile, dst, "#import site", "import site")
 
     def build_bootstrap(self):
@@ -238,20 +250,21 @@ class WindowsBuildHelper:
 
 
 class UnixLikeBuildHelper:
-    def __init__(self, conanfile, prefix_dir):
+    def __init__(self, conanfile, prefix):
         self.conanfile = conanfile
-        self.prefix_dir = prefix_dir
+        self.prefix = prefix
 
-    def _get_source(self):
-        url = f"https://github.com/python/cpython/archive/v{self.conanfile.pyversion}.tar.gz"
-        get(self.conanfile, url, strip_root=True)
+    @staticmethod
+    def get_source(conanfile):
+        url = f"https://github.com/python/cpython/archive/v{conanfile.pyversion}.tar.gz"
+        get(conanfile, url, strip_root=True)
 
         # Patch a build issue with clang 13: https://bugs.python.org/issue45405. We simply apply
         # the patch for all clang versions since the flag never did anything on clang/apple-clang anyway.
-        compiler = self.conanfile.settings.compiler
-        if "clang" in str(compiler) and Version(self.conanfile.pyversion) < "3.9.8":
+        compiler = conanfile.settings.compiler
+        if "clang" in str(compiler) and Version(conanfile.pyversion) < "3.9.8":
             replace_in_file(
-                self.conanfile,
+                conanfile,
                 "configure",
                 "MULTIARCH=$($CC --print-multiarch 2>/dev/null)",
                 "MULTIARCH=''",
@@ -266,18 +279,18 @@ class UnixLikeBuildHelper:
             pck = "OpenSSL"
         return self.conanfile.deps_cpp_info[pck].rootpath
 
-    def _build(self, dest_dir):
-        from conan.tools.gnu import AutotoolsToolchain, Autotools
-
-        tc = AutotoolsToolchain(self.conanfile, prefix=dest_dir)
+    def generate(self):
+        from conan.tools.gnu import AutotoolsToolchain, AutotoolsDeps
+        tc = AutotoolsToolchain(self.conanfile, prefix=self.prefix)
         tc.configure_args.extend(["--enable-shared", f"--with-openssl={self._openssl_path}"])
-        tc.make_args.append("-j8")
+        tc.generate()
 
+        deps = AutotoolsDeps(self.conanfile)
         # We need to do this manually because `AutotoolsDeps` doesn't add `tools_requires` deps
         for dep in self.conanfile.deps_cpp_info.deps:
             info = self.conanfile.deps_cpp_info[dep]
-            tc.extra_cflags.extend([f"-I{x}" for x in info.include_paths])
-            tc.extra_ldflags.extend([f"-L{x}" for x in info.lib_paths])
+            deps.environment.append("CPPFLAGS", [f"-I{x}" for x in info.include_paths])
+            deps.environment.append("LDFLAGS", [f"-L{x}" for x in info.lib_paths])
 
         # On Linux, we need to set RPATH so that `root/bin/python3` can correctly find the `.so`
         # file in `root/lib` no matter where `root` is. We need it to be portable. We explicitly
@@ -285,38 +298,41 @@ class UnixLikeBuildHelper:
         # the LD_LIBRARY_PATH env variable which is not at all what we want for this self-contained
         # package. Unlike RUNPATH, RPATH takes precedence over LD_LIBRARY_PATH.
         if self.conanfile.settings.os == "Linux":
-            tc.extra_ldflags.extend(["-Wl,-rpath,'$$ORIGIN/../lib'", "-Wl,--disable-new-dtags"])
+            deps.environment.append("LDFLAGS", ["-Wl,-rpath='\$\$ORIGIN/../lib'", "-Wl,--disable-new-dtags"])
 
-        tc.generate()
+        deps.generate()
 
-        with tc.environment().vars(self.conanfile).apply():
-            autotools = Autotools(self.conanfile)
-            autotools.configure()
-            autotools.make()
-            autotools.install(args=["DESTDIR=''"])  # already handled by `prefix=dest_dir`
+    def build(self):
+        from conan.tools.gnu import Autotools
+        autotools = Autotools(self.conanfile)
+        autotools.configure()
+        autotools.make()
+
+    def install(self):
+        from conan.tools.gnu import Autotools
+        autotools = Autotools(self.conanfile)
+        autotools.install(
+            args=["DESTDIR=''"])  # already handled by `prefix=dest_dir`
 
         ver = ".".join(self.conanfile.pyversion.split(".")[:2])
-        exe = str(dest_dir / f"bin/python{ver}")
+        exe = str(self.prefix / f"bin/python{ver}")
 
         specs = [
             f"pip=={self.conanfile.options.pip_version}",
             f"setuptools=={self.conanfile.options.setuptools_version}",
             f"wheel=={self.conanfile.options.wheel_version}",
         ]
+
         self.conanfile.run(f"{exe} -m pip install -U {' '.join(specs)}")
 
         # Move the license file to match the Windows layout
-        lib_dir = dest_dir / "lib"
-        os.rename(lib_dir / f"python{ver}/LICENSE.txt", dest_dir / "LICENSE.txt")
+        lib_dir = self.prefix / "lib"
+        os.rename(lib_dir / f"python{ver}/LICENSE.txt", self.prefix / "LICENSE.txt")
 
         # Give write permissions, otherwise end-user projects won't be able to re-import
         # the shared libraries (re-import happens on subsequent `conan install` runs).
         for file in lib_dir.glob("libpython*"):
             self.conanfile.run(f"chmod 777 {file}")
-
-    def build_embedded(self):
-        self._get_source()
-        self._build(self.prefix_dir)
 
     def enable_site_packages(self):
         """These are enabled by default when building from source"""
@@ -324,4 +340,4 @@ class UnixLikeBuildHelper:
 
     def build_bootstrap(self):
         """For now, as a shortcut, we'll let the Unix-like builds bootstrap themselves"""
-        return self.prefix_dir / "bin/python3"
+        return self.prefix / "bin/python3"

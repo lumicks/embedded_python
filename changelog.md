@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.5.1 | 2023-03-13
+
+- Fixed bug where embedded_python will only use local `zlib` instead of the `tool_requires` one.
+
 ## v1.5.0 | 2023-02-28
 
 - Fixed symlink re-creation, in case already existing symlink was invalid
