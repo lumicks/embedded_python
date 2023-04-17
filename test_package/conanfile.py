@@ -63,6 +63,7 @@ class TestEmbeddedPython(ConanFile):
         license_files = [license_dir / "LICENSE.txt"]
         if self.options.env:
             license_files += [license_dir / "package_licenses.txt"]
+            license_files += [license_dir / "packages.txt"]
 
         for file in license_files:
             print(f"{file}: {file.stat().st_size}")
