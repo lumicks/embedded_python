@@ -1,5 +1,6 @@
 import os
 import pathlib
+import re
 from conan import ConanFile
 from conan.tools.files import get, replace_in_file, download, rmdir, copy
 from conan.tools.scm import Version
@@ -10,7 +11,7 @@ required_conan_version = ">=1.56.0"
 # noinspection PyUnresolvedReferences
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.5.1"  # of the Conan package, `options.version` is the Python version
+    version = "1.5.2"  # of the Conan package, `options.version` is the Python version
     license = "PSFL"
     description = "Embedded distribution of Python"
     topics = "embedded", "python"
@@ -86,16 +87,11 @@ class EmbeddedPython(ConanFile):
         """Two-digit integer version, e.g. 3.7.3 -> 37"""
         return "".join(self.pyversion.split(".")[:2])
 
-    def make_requirements_file(self, extra_packages=None):
-        """Create a `requirements.txt` based on `self.options.packages` and return its path
 
-        We accept `self.options.packages` as either a space-separated list of packages (as
-        you would pass to `pip install <packages>`) or the full contents of a `requirements.txt`
-        file (as you would pass to `pip install -r <file>`). But in either case, we generate
-        a `requirements.txt` file internally for installation.
-
-        The `extra_packages` can be used to add extra packages (as a Python `list`) to be
-        installed in addition to `self.options.packages`.
+    def make_package_list(self):
+        """Create a list of package names based on `self.options.packages`
+        
+        For details of the `self.options.packages` format see `make_requirements_file`
         """
 
         def split_lines(string):
@@ -110,7 +106,21 @@ class EmbeddedPython(ConanFile):
             return string.split(" ")
 
         packages_str = str(self.options.packages).strip()
-        packages_list = split_lines(packages_str)
+        return split_lines(packages_str)            
+
+
+    def make_requirements_file(self, extra_packages=None):
+        """Create a `requirements.txt` based on `self.options.packages` and return its path
+
+        We accept `self.options.packages` as either a space-separated list of packages (as
+        you would pass to `pip install <packages>`) or the full contents of a `requirements.txt`
+        file (as you would pass to `pip install -r <file>`). But in either case, we generate
+        a `requirements.txt` file internally for installation.
+
+        The `extra_packages` can be used to add extra packages (as a Python `list`) to be
+        installed in addition to `self.options.packages`.
+        """
+        packages_list = self.make_package_list()
         if extra_packages:
             packages_list.extend(extra_packages)
 
@@ -136,6 +146,15 @@ class EmbeddedPython(ConanFile):
             f" --with-license-file --no-license-path --output-file=package_licenses.txt"
         )
 
+    def _gather_packages(self):
+        """Gather all the required packages into a file for future reference"""
+        matcher = re.compile(r"^([\w.-]+)==[\w.-]+$")
+        matches = map(matcher.match, self.make_package_list())
+        package_names = (match.group(1) for match in filter(None, matches))
+        with open("packages.txt", "w") as output:
+            output.write("\n".join(package_names))
+
+
     def source(self):
         replace_in_file(self, "embedded_python.cmake", "${self.pyversion}", str(self.pyversion))
 
@@ -160,6 +179,7 @@ class EmbeddedPython(ConanFile):
         self.build_helper.enable_site_packages()
         bootstrap = self.build_helper.build_bootstrap()
         self._gather_licenses(bootstrap)
+        self._gather_packages()
 
         # Some modules always assume that `setuptools` is installed (e.g. pytest)
         requirements = self.make_requirements_file(
@@ -176,6 +196,7 @@ class EmbeddedPython(ConanFile):
         copy(self, "embedded_python*", src, self.package_folder)
         copy(self, "embedded_python/LICENSE.txt", src, license_folder, keep_path=False)
         copy(self, "package_licenses.txt", src, license_folder, keep_path=False)
+        copy(self, "packages.txt", src, license_folder, keep_path=False)
 
     def package_info(self):
         self.env_info.PYTHONPATH.append(self.package_folder)

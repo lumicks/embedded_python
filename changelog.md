@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.5.2 | 2023-04-18
+
+- Added a list of all installed packages to `licenses/packages.txt`.
+
 ## v1.5.1 | 2023-03-13
 
 - Fixed bug where embedded_python will only use local `zlib` instead of the `tool_requires` one.
