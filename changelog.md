@@ -3,6 +3,7 @@
 ## v1.5.2 | 2023-04-18
 
 - Added a list of all installed packages to `licenses/packages.txt`.
+- Fixed executable's hardcoded search path for `libpython` on macOS.
 
 ## v1.5.1 | 2023-03-13
 
