@@ -1,6 +1,7 @@
 import os
 import pathlib
 import re
+from io import StringIO
 from conan import ConanFile
 from conan.tools.files import get, replace_in_file, download, rmdir, copy
 from conan.tools.scm import Version
@@ -337,6 +338,7 @@ class UnixLikeBuildHelper:
 
         ver = ".".join(self.conanfile.pyversion.split(".")[:2])
         exe = str(self.prefix / f"bin/python{ver}")
+        self._patch_libpython_path(exe)
 
         specs = [
             f"pip=={self.conanfile.options.pip_version}",
@@ -362,3 +364,20 @@ class UnixLikeBuildHelper:
     def build_bootstrap(self):
         """For now, as a shortcut, we'll let the Unix-like builds bootstrap themselves"""
         return self.prefix / "bin/python3"
+
+    def _patch_libpython_path(self, exe):
+        """Patch libpython search path"""
+        if self.conanfile.settings.os != "Macos":
+            return
+
+        buffer = StringIO()
+        self.conanfile.run(f"otool -L {exe}", output=buffer)
+        lines = buffer.getvalue().strip().split('\n')[1:]
+        libraries = [line.split()[0] for line in lines]
+
+        prefix = str(self.prefix)
+        hardcoded_libraries = [lib for lib in libraries if lib.startswith(prefix)]
+        for lib in hardcoded_libraries:
+            relocatable_library = lib.replace(prefix, "@executable_path/..")
+            self.conanfile.output.info(f"Patching {exe}, replace {lib} with {relocatable_library}")
+            self.conanfile.run(f"install_name_tool -change {lib} {relocatable_library} {exe}")
