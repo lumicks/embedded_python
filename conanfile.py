@@ -12,7 +12,7 @@ required_conan_version = ">=1.56.0"
 # noinspection PyUnresolvedReferences
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.5.2"  # of the Conan package, `options.version` is the Python version
+    version = "1.5.3"  # of the Conan package, `options.version` is the Python version
     license = "PSFL"
     description = "Embedded distribution of Python"
     topics = "embedded", "python"
@@ -153,18 +153,14 @@ class EmbeddedPython(ConanFile):
         with open("packages.txt", "w") as output:
             output.write("\n".join(package_names))
 
-    def source(self):
-        replace_in_file(self, "embedded_python.cmake", "${self.pyversion}", str(self.pyversion))
-
-        if self.settings.os != "Windows":
-            UnixLikeBuildHelper.get_source(self)
-
     def generate(self):
         prefix = pathlib.Path(self.build_folder) / "embedded_python"
+        replace_in_file(self, "embedded_python.cmake", "${self.pyversion}", str(self.pyversion))
         if self.settings.os == "Windows":
             self.build_helper = WindowsBuildHelper(self, prefix)
         else:
             self.build_helper = UnixLikeBuildHelper(self, prefix)
+            self.build_helper.get_source()
             self.build_helper.generate()
 
     def build(self):
@@ -273,17 +269,16 @@ class UnixLikeBuildHelper:
         self.conanfile = conanfile
         self.prefix = prefix
 
-    @staticmethod
-    def get_source(conanfile):
-        url = f"https://github.com/python/cpython/archive/v{conanfile.pyversion}.tar.gz"
-        get(conanfile, url, strip_root=True)
+    def get_source(self):
+        url = f"https://github.com/python/cpython/archive/v{self.conanfile.pyversion}.tar.gz"
+        get(self.conanfile, url, strip_root=True)
 
         # Patch a build issue with clang 13: https://bugs.python.org/issue45405. We simply apply
         # the patch for all clang versions since the flag never did anything on clang/apple-clang anyway.
-        compiler = conanfile.settings.compiler
-        if "clang" in str(compiler) and Version(conanfile.pyversion) < "3.9.8":
+        compiler = self.conanfile.settings.compiler
+        if "clang" in str(compiler) and Version(self.conanfile.pyversion) < "3.9.8":
             replace_in_file(
-                conanfile,
+                self.conanfile,
                 "configure",
                 "MULTIARCH=$($CC --print-multiarch 2>/dev/null)",
                 "MULTIARCH=''",
