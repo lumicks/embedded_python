@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.5.3 | 2023-04-25
+
+- Fixed a bug where the python version would be incorrectly cached between builds as the conan `source` method is only called once.
+
 ## v1.5.2 | 2023-04-18
 
 - Added a list of all installed packages to `licenses/packages.txt`.
