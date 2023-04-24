@@ -88,10 +88,9 @@ class EmbeddedPython(ConanFile):
         """Two-digit integer version, e.g. 3.7.3 -> 37"""
         return "".join(self.pyversion.split(".")[:2])
 
-
     def make_package_list(self):
         """Create a list of package names based on `self.options.packages`
-        
+
         For details of the `self.options.packages` format see `make_requirements_file`
         """
 
@@ -107,8 +106,7 @@ class EmbeddedPython(ConanFile):
             return string.split(" ")
 
         packages_str = str(self.options.packages).strip()
-        return split_lines(packages_str)            
-
+        return split_lines(packages_str)
 
     def make_requirements_file(self, extra_packages=None):
         """Create a `requirements.txt` based on `self.options.packages` and return its path
@@ -154,7 +152,6 @@ class EmbeddedPython(ConanFile):
         package_names = (match.group(1) for match in filter(None, matches))
         with open("packages.txt", "w") as output:
             output.write("\n".join(package_names))
-
 
     def source(self):
         replace_in_file(self, "embedded_python.cmake", "${self.pyversion}", str(self.pyversion))
@@ -303,6 +300,7 @@ class UnixLikeBuildHelper:
 
     def generate(self):
         from conan.tools.gnu import AutotoolsToolchain, AutotoolsDeps
+
         tc = AutotoolsToolchain(self.conanfile, prefix=self.prefix)
         tc.configure_args.extend(["--enable-shared", f"--with-openssl={self._openssl_path}"])
         tc.generate()
@@ -320,21 +318,24 @@ class UnixLikeBuildHelper:
         # the LD_LIBRARY_PATH env variable which is not at all what we want for this self-contained
         # package. Unlike RUNPATH, RPATH takes precedence over LD_LIBRARY_PATH.
         if self.conanfile.settings.os == "Linux":
-            deps.environment.append("LDFLAGS", ["-Wl,-rpath='\$\$ORIGIN/../lib'", "-Wl,--disable-new-dtags"])
+            deps.environment.append(
+                "LDFLAGS", ["-Wl,-rpath='\$\$ORIGIN/../lib'", "-Wl,--disable-new-dtags"]
+            )
 
         deps.generate()
 
     def build(self):
         from conan.tools.gnu import Autotools
+
         autotools = Autotools(self.conanfile)
         autotools.configure()
         autotools.make()
 
     def install(self):
         from conan.tools.gnu import Autotools
+
         autotools = Autotools(self.conanfile)
-        autotools.install(
-            args=["DESTDIR=''"])  # already handled by `prefix=dest_dir`
+        autotools.install(args=["DESTDIR=''"])  # already handled by `prefix=dest_dir`
 
         ver = ".".join(self.conanfile.pyversion.split(".")[:2])
         exe = str(self.prefix / f"bin/python{ver}")
@@ -372,7 +373,7 @@ class UnixLikeBuildHelper:
 
         buffer = StringIO()
         self.conanfile.run(f"otool -L {exe}", output=buffer)
-        lines = buffer.getvalue().strip().split('\n')[1:]
+        lines = buffer.getvalue().strip().split("\n")[1:]
         libraries = [line.split()[0] for line in lines]
 
         prefix = str(self.prefix)
