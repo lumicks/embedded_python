@@ -54,22 +54,20 @@ class TestEmbeddedPython(ConanFile):
         name = str(self.options.env) if self.options.env else "baseline"
         self.run(f"{python_exe} {project_root / name / 'test.py'}", run_environment=True)
 
-
     def _test_libpython_path(self):
         if self.settings.os != "Macos":
             return
 
         python_exe = str(pathlib.Path("./bin/python/bin/python3").resolve())
         buffer = StringIO()
-        self.run(f'otool -L {python_exe}', run_environment=True, output=buffer)
-        lines = buffer.getvalue().strip().split('\n')[1:]
+        self.run(f"otool -L {python_exe}", run_environment=True, output=buffer)
+        lines = buffer.getvalue().strip().split("\n")[1:]
         libraries = [line.split()[0] for line in lines]
         candidates = [lib for lib in libraries if "libpython" in lib]
         assert candidates, f"libpython dependency not found in 'otool' output: {libraries}"
 
         for lib in candidates:
             assert lib.startswith("@executable_path"), f"libpython has an unexpected prefix: {lib}"
-
 
     def _test_embed(self):
         """Ensure that everything is available to compile and link to the embedded Python"""
