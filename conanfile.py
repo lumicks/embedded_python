@@ -12,7 +12,7 @@ required_conan_version = ">=1.56.0"
 # noinspection PyUnresolvedReferences
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.5.3"  # of the Conan package, `options.version` is the Python version
+    version = "1.5.4"  # of the Conan package, `options.version` is the Python version
     license = "PSFL"
     description = "Embedded distribution of Python"
     topics = "embedded", "python"
