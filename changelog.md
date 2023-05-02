@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.5.4 | 2023-05-02
+
+- Removed the only usage of deprecated attribute `deps_cpp_info` of `Conanfile` from `embedded_python_tools.py`.
+
 ## v1.5.3 | 2023-04-25
 
 - Fixed a bug where the python version would be incorrectly cached between builds as the conan `source` method is only called once.
