@@ -1,0 +1,2 @@
+git+https://github.com/lumicks/pylake@57c79352b3d0ed101cb757bc08e334c33502a233#egg=lumicks.pylake[notebook]
+    # Equivalent to pylake 1.0.0 but using a specific commit to validate the functionality
