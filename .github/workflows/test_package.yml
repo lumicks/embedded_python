@@ -28,13 +28,8 @@ jobs:
         conan config set general.revisions_enabled=True
         conan profile new default --detect
         conan profile update settings.compiler.cppstd=17 default
-    - name: Conan cache
-      uses: actions/cache@v2
-      with:
-        path: |
-          ~/.conan/data
-          C:\.conan
-        key: conan-cache-${{ runner.os }}-py${{ matrix.embedded-py }}-${{ hashFiles('conanfile.py', '**/test_package.yml') }}
+    - name: Test core
+      run: conan create ./core lumicks/testing -o embedded_python-core:version=${{ matrix.embedded-py }} --build=missing
     - name: Test baseline
       run: ${{ env.create_pck }}
     - name: Test with numpy env

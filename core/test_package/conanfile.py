@@ -1,31 +1,19 @@
 import pathlib
-import sys
 from io import StringIO
 from conan import ConanFile
 from conan.tools.cmake import CMake, CMakeToolchain
 
-project_root = pathlib.Path(__file__).parent
-
-
-def _read_env(name):
-    with open(project_root / f"{name}/env/{sys.platform}.txt") as f:
-        return f.read().replace("\n", "\t")
-
 
 # noinspection PyUnresolvedReferences
-class TestEmbeddedPython(ConanFile):
+class TestEmbeddedPythonCore(ConanFile):
     name = "test_embedded_python"
     settings = "os", "compiler", "build_type", "arch"
     generators = "CMakeDeps"
-    options = {"env": [None, "ANY"]}
-    default_options = {
-        "env": None,
-        "embedded_python:version": "3.9.7",
-    }
+    default_options = {"embedded_python-core:version": "3.11.3"}
+    test_type = "explicit"
 
-    def configure(self):
-        if self.options.env:
-            self.options["embedded_python"].packages = _read_env(self.options.env)
+    def requirements(self):
+        self.requires(self.tested_reference_str)
 
     def generate(self):
         build_type = self.settings.build_type.value
@@ -37,35 +25,33 @@ class TestEmbeddedPython(ConanFile):
         import embedded_python_tools
 
         embedded_python_tools.symlink_import(self, dst="bin/python")
-
         cmake = CMake(self)
         cmake.configure()
         cmake.build()
 
-    def _test_env(self):
-        """Ensure that Python runs and finds the installed environment"""
+    @property
+    def _py_exe(self):
         if self.settings.os == "Windows":
-            python_exe = str(pathlib.Path("./bin/python/python").resolve())
+            return pathlib.Path(self.build_folder, "bin/python/python.exe")
         else:
-            python_exe = str(pathlib.Path("./bin/python/bin/python3").resolve())
+            return pathlib.Path(self.build_folder, "bin/python/bin/python3")
 
-        self.run(f'{python_exe} -c "import sys; print(sys.version);"')
-
-        name = str(self.options.env) if self.options.env else "baseline"
-        self.run(f"{python_exe} {project_root / name / 'test.py'}", run_environment=True)
+    def _test_stdlib(self):
+        """Ensure that Python runs and built the optional stdlib modules"""
+        self.run(f'{self._py_exe} -c "import sys; print(sys.version);"')
+        self.run(f"{self._py_exe} {pathlib.Path(__file__).parent / 'test.py'}")
 
     def _test_libpython_path(self):
+        """Ensure that the Python lib path is not hardcoded on macOS"""
         if self.settings.os != "Macos":
             return
 
-        python_exe = str(pathlib.Path("./bin/python/bin/python3").resolve())
         buffer = StringIO()
-        self.run(f"otool -L {python_exe}", run_environment=True, output=buffer)
+        self.run(f"otool -L {self._py_exe}", run_environment=True, output=buffer)
         lines = buffer.getvalue().strip().split("\n")[1:]
         libraries = [line.split()[0] for line in lines]
         candidates = [lib for lib in libraries if "libpython" in lib]
         assert candidates, f"libpython dependency not found in 'otool' output: {libraries}"
-
         for lib in candidates:
             assert lib.startswith("@executable_path"), f"libpython has an unexpected prefix: {lib}"
 
@@ -74,18 +60,13 @@ class TestEmbeddedPython(ConanFile):
         self.run(pathlib.Path("bin", "test_package"), run_environment=True)
 
     def _test_licenses(self):
-        """Ensure that the licenses have been gathered"""
-        license_dir = pathlib.Path(self.deps_cpp_info["embedded_python"].rootpath, "licenses")
-        license_files = [license_dir / "LICENSE.txt"]
-        if self.options.env:
-            license_files += [license_dir / "package_licenses.txt"]
-            license_files += [license_dir / "packages.txt"]
-
-        for file in license_files:
-            print(f"{file}: {file.stat().st_size}")
+        """Ensure that the license file is included"""
+        license_dir = pathlib.Path(self.deps_cpp_info["embedded_python-core"].rootpath, "licenses")
+        file = license_dir / "LICENSE.txt"
+        print(f"{file}: {file.stat().st_size}")
 
     def test(self):
-        self._test_env()
+        self._test_stdlib()
         self._test_libpython_path()
         self._test_embed()
         self._test_licenses()
