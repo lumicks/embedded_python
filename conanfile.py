@@ -28,10 +28,10 @@ class EmbeddedPython(ConanFile):
     }
     default_options = {
         "packages": None,
-        "pip_version": "22.1.2",
+        "pip_version": "23.1.2",
         "pip_licenses_version": "3.5.4",
-        "setuptools_version": "63.2.0",
-        "wheel_version": "0.37.1",
+        "setuptools_version": "67.8.0",
+        "wheel_version": "0.40.0",
         "openssl_variant": "lowercase",
     }
     short_paths = True  # some of the pip packages go over the 260 char path limit on Windows
