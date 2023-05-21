@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.6.0 | In development
+
+- Recipe build performance has been improved significantly and Conan cache usage has been reduced: 
+  - In cases where only the `packages` option changes, the recipe no longer requires CPython to be re-compiled (Linux, macOS) or re-downloaded (Windows) every single time. Instead, we take advantage of the Conan cache: the new `embedded_python-core` package contains all baseline binaries (without any `pip` packages). `embedded_python` builds on top of `-core` by adding the `pip` packages and can reuse any compatible `-core` package from the cache.
+  - The Python packages are now installed directly into the `package` folder instead of going via the `build` folder. This speeds up the packaging and reduces space usage since there's no more file duplication.
+  - With Python >= 3.11, the recipe now makes use of the new `./configure --disable-test-modules` option to avoid building and packaging CPython's internal tests.
+- Fixed a bug where deleting the recipe `build` folder would make the package unusable because the `package` folder accidentally contained symlinks to files in the `build` folder.
+
 ## v1.5.4 | 2023-05-02
 
 - Removed the only usage of deprecated attribute `deps_cpp_info` of `Conanfile` from `embedded_python_tools.py`.
