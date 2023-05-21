@@ -23,6 +23,11 @@ class EmbeddedPythonCore(ConanFile):
     default_options = {"openssl_variant": "lowercase"}
     exports_sources = "embedded_python_tools.py", "embedded_python.cmake"
 
+    def validate(self):
+        minimum_python = "3.9.8"
+        if self.pyversion < minimum_python:
+            raise ConanInvalidConfiguration(f"Minimum supported Python version is {minimum_python}")
+
     def config_options(self):
         """On Windows, we download a binary so these options have no effect"""
         if self.settings.os == "Windows":
@@ -83,17 +88,6 @@ class EmbeddedPythonCore(ConanFile):
         # here instead of in `def source()` which is reused between Conan options.
         url = f"https://github.com/python/cpython/archive/v{self.pyversion}.tar.gz"
         files.get(self, url, strip_root=True)
-
-        # Patch a build issue with clang 13: https://bugs.python.org/issue45405. We simply apply
-        # the patch for all clang versions since the flag never did anything on clang anyway.
-        if "clang" in str(self.settings.compiler) and self.pyversion < "3.9.8":
-            files.replace_in_file(
-                self,
-                "configure",
-                "MULTIARCH=$($CC --print-multiarch 2>/dev/null)",
-                "MULTIARCH=''",
-                strict=False,
-            )
 
         tc = AutotoolsToolchain(self, prefix=pathlib.Path(self.package_folder, "embedded_python"))
         openssl_pck = "openssl" if self.options.openssl_variant == "lowercase" else "OpenSSL"

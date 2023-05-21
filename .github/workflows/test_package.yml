@@ -1,14 +1,13 @@
 name: test_package
-
 on: push
-
 jobs:
   test_package:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        embedded-py: [3.8.10, 3.10.4]
+        embedded-py: [3.9.8, 3.11.3]
     env:
       create_pck: conan create . lumicks/testing -o embedded_python:version=${{ matrix.embedded-py }} --build=missing
     steps:
@@ -24,7 +23,7 @@ jobs:
         echo CXX=/usr/bin/clang++ >> $GITHUB_ENV
     - name: Install Conan
       run: | 
-        python -m pip install conan==1.59
+        python -m pip install conan==1.59.0
         conan config set general.revisions_enabled=True
         conan profile new default --detect
         conan profile update settings.compiler.cppstd=17 default
@@ -37,5 +36,4 @@ jobs:
     - name: Test with nbconvert env
       run: ${{ env.create_pck }} -o test_embedded_python:env=nbconvert
     - name: Test with pylake env
-      if: ${{ matrix.embedded-py  != '3.8.10' }} # pylake requires python >= 3.9
       run: ${{ env.create_pck }} -o test_embedded_python:env=pylake
