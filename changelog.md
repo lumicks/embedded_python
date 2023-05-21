@@ -7,6 +7,7 @@
   - The Python packages are now installed directly into the `package` folder instead of going via the `build` folder. This speeds up the packaging and reduces space usage since there's no more file duplication.
   - With Python >= 3.11, the recipe now makes use of the new `./configure --disable-test-modules` option to avoid building and packaging CPython's internal tests.
 - Updated default recipe options to `pip` v23.1.2, `setuptools` v67.8.0, and `wheel` v0.40.0 to improve compatibility with the latest PyPI packages.
+- Updated default `pip_licenses_version` to v4.3.2 for compatibility with Python 3.11.
 - Fixed a bug where deleting the recipe `build` folder would make the package unusable because the `package` folder accidentally contained symlinks to files in the `build` folder.
 - Fixed a bug on Windows where `pip install` would fail for packages that needed to build a wheel from source (e.g `git` requirements). 
 - Fixed a bug on Windows where `embedded_python_tools` would fail when the source and destination were on different network drives. It will now fall back to `files.copy()` in case `CreateJunction()` is not possible. 
