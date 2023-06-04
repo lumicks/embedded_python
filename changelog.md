@@ -1,12 +1,13 @@
 # Changelog
 
-## v1.6.0 | In development
+## v1.6.0 | 2023-06-07
 
 - Added tests for Python 3.11 and set minimum supported Python version to 3.9.8.
 - Recipe build performance has been improved significantly and Conan cache usage has been reduced: 
   - In cases where only the `packages` option changes, the recipe no longer requires CPython to be re-compiled (Linux, macOS) or re-downloaded (Windows) every single time. Instead, we take advantage of the Conan cache: the new `embedded_python-core` package contains all baseline binaries (without any `pip` packages). `embedded_python` builds on top of `-core` by adding the `pip` packages and can reuse any compatible `-core` package from the cache.
   - The Python packages are now installed directly into the `package` folder instead of going via the `build` folder. This speeds up the packaging and reduces space usage since there's no more file duplication.
   - With Python >= 3.11, the recipe now makes use of the new `./configure --disable-test-modules` option to avoid building and packaging CPython's internal tests.
+  - On macOS and Linux, the Python standard library is now stored in a `.zip` file to reduce package size (as was already the case on Windows). This is controlled by the `embedded_python-core:zip_stdlib` option which can have the values of `no`, `stored`, or `delflated`.
 - Updated default recipe options to `pip` v23.1.2, `setuptools` v67.8.0, and `wheel` v0.40.0 to improve compatibility with the latest PyPI packages.
 - Updated default `pip_licenses_version` to v4.3.2 for compatibility with Python 3.11.
 - Fixed a bug where deleting the recipe `build` folder would make the package unusable because the `package` folder accidentally contained symlinks to files in the `build` folder.
