@@ -1,4 +1,4 @@
-anyio==3.6.2
+anyio==3.7.0
     # via jupyter-server
 argon2-cffi==21.3.0
     # via
@@ -19,7 +19,7 @@ beautifulsoup4==4.12.2
     # via nbconvert
 bleach==6.0.0
     # via nbconvert
-cachetools==5.3.0
+cachetools==5.3.1
     # via lumicks-pylake
 cffi==1.15.1
     # via argon2-cffi-bindings
@@ -40,15 +40,17 @@ decorator==5.1.1
     # via ipython
 defusedxml==0.7.1
     # via nbconvert
-deprecated==1.2.13
+deprecated==1.2.14
     # via lumicks-pylake
 exceptiongroup==1.1.1
-    # via pytest
+    # via
+    #   anyio
+    #   pytest
 executing==1.2.0
     # via stack-data
-fastjsonschema==2.16.3
+fastjsonschema==2.17.1
     # via nbformat
-fonttools==4.39.3
+fonttools==4.39.4
     # via matplotlib
 fqdn==1.5.1
     # via jsonschema
@@ -58,7 +60,7 @@ idna==3.4
     # via
     #   anyio
     #   jsonschema
-imageio==2.28.1
+imageio==2.30.0
     # via scikit-image
 importlib-metadata==6.6.0
     # via
@@ -68,12 +70,12 @@ importlib-resources==5.12.0
     # via matplotlib
 iniconfig==2.0.0
     # via pytest
-ipykernel==6.23.0
+ipykernel==6.23.1
     # via
     #   ipywidgets
     #   nbclassic
     #   notebook
-ipython==8.13.2
+ipython==8.14.0
     # via
     #   ipykernel
     #   ipywidgets
@@ -120,7 +122,7 @@ jupyter-core==5.3.0
     #   notebook
 jupyter-events==0.6.3
     # via jupyter-server
-jupyter-server==2.5.0
+jupyter-server==2.6.0
     # via
     #   nbclassic
     #   notebook-shim
@@ -134,9 +136,9 @@ kiwisolver==1.4.4
     # via matplotlib
 lazy-loader==0.2
     # via scikit-image
-lumicks.pylake @ git+https://github.com/lumicks/pylake@57c79352b3d0ed101cb757bc08e334c33502a233
+lumicks.pylake @ git+https://github.com/lumicks/pylake@760f9c1a3eb382aa38007cbcd7eb5bdfab211762
     # via -r test_package\pylake\requirements.txt
-markupsafe==2.1.2
+markupsafe==2.1.3
     # via
     #   jinja2
     #   nbconvert
@@ -150,14 +152,14 @@ mistune==2.0.5
     # via nbconvert
 nbclassic==1.0.0
     # via notebook
-nbclient==0.7.4
+nbclient==0.8.0
     # via nbconvert
 nbconvert==7.4.0
     # via
     #   jupyter-server
     #   nbclassic
     #   notebook
-nbformat==5.8.0
+nbformat==5.9.0
     # via
     #   jupyter-server
     #   nbclassic
@@ -190,6 +192,8 @@ numpy==1.24.3
     #   tifffile
 opencv-python-headless==4.7.0.72
     # via lumicks-pylake
+overrides==7.3.1
+    # via jupyter-server
 packaging==23.1
     # via
     #   ipykernel
@@ -209,11 +213,11 @@ pillow==9.5.0
     #   imageio
     #   matplotlib
     #   scikit-image
-platformdirs==3.5.0
+platformdirs==3.5.1
     # via jupyter-core
 pluggy==1.0.0
     # via pytest
-prometheus-client==0.16.0
+prometheus-client==0.17.0
     # via
     #   jupyter-server
     #   nbclassic
@@ -253,7 +257,7 @@ pywinpty==2.0.10
     #   terminado
 pyyaml==6.0
     # via jupyter-events
-pyzmq==25.0.2
+pyzmq==25.1.0
     # via
     #   ipykernel
     #   jupyter-client
@@ -268,11 +272,11 @@ rfc3986-validator==0.1.1
     # via
     #   jsonschema
     #   jupyter-events
-scikit-image==0.20.0
+scikit-image==0.21.0
     # via lumicks-pylake
 scikit-learn==1.2.2
     # via lumicks-pylake
-scipy==1.9.1
+scipy==1.10.1
     # via
     #   lumicks-pylake
     #   scikit-image
@@ -312,7 +316,7 @@ tinycss2==1.2.1
     # via nbconvert
 tomli==2.0.1
     # via pytest
-tornado==6.3.1
+tornado==6.3.2
     # via
     #   ipykernel
     #   jupyter-client
@@ -338,7 +342,7 @@ traitlets==5.9.0
     #   nbconvert
     #   nbformat
     #   notebook
-typing-extensions==4.5.0
+typing-extensions==4.6.3
     # via ipython
 uri-template==1.2.0
     # via jsonschema
@@ -350,7 +354,7 @@ webencodings==0.5.1
     # via
     #   bleach
     #   tinycss2
-websocket-client==1.5.1
+websocket-client==1.5.2
     # via jupyter-server
 widgetsnbextension==4.0.7
     # via ipywidgets
