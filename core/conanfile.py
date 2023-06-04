@@ -1,4 +1,7 @@
 import io
+import os
+import sys
+import shutil
 import pathlib
 from conan import ConanFile
 from conan.tools import files, scm
@@ -19,8 +22,12 @@ class EmbeddedPythonCore(ConanFile):
     options = {
         "version": ["ANY"],
         "openssl_variant": ["lowercase", "uppercase"],  # see explanation in `build_requirements()`
+        "zip_stdlib": ["no", "stored", "deflated"],
     }
-    default_options = {"openssl_variant": "lowercase"}
+    default_options = {
+        "openssl_variant": "lowercase",
+        "zip_stdlib": "stored",
+    }
     exports_sources = "embedded_python_tools.py", "embedded_python.cmake"
 
     def validate(self):
@@ -33,6 +40,7 @@ class EmbeddedPythonCore(ConanFile):
         if self.settings.os == "Windows":
             del self.settings.compiler
             del self.settings.build_type
+            del self.options.zip_stdlib
 
     def configure(self):
         """We only use the C compiler so ensure we don't need to rebuild if C++ settings change"""
@@ -74,6 +82,11 @@ class EmbeddedPythonCore(ConanFile):
     def short_pyversion(self):
         """The first two components of the version number, e.g. 3.11"""
         return scm.Version(".".join(str(self.options.version).split(".")[:2]))
+
+    @property
+    def int_pyversion(self):
+        """The first two components of the version number in integer form, e.g. 311"""
+        return scm.Version("".join(str(self.options.version).split(".")[:2]))
 
     def generate(self):
         files.replace_in_file(
@@ -137,6 +150,74 @@ class EmbeddedPythonCore(ConanFile):
             self.output.info(f"Patching {exe}, replace {lib} with {relocatable_library}")
             self.run(f"install_name_tool -change {lib} {relocatable_library} {exe}")
 
+    def _zip_stdlib(self, prefix):
+        """Precompile and zip the standard library just like the pre-built package for Windows
+
+        For reference, see https://github.com/python/cpython/blob/main/PC/layout/main.py, which is
+        used to create the embedded Python distribution for Windows. We can't re-use it directly
+        because it's too Windows-specific, but we can follow the same steps.
+        """
+        if self.settings.os == "Windows":
+            return
+
+        import zipfile
+
+        # We'll move everything from `lib` to `.zip` except for these folders
+        keep_lib_dirs = [
+            "lib-dynload",  # contains only binaries (shared libraries)
+            "site-packages",  # not part of the standard library
+            f"config-{self.short_pyversion}-{sys.platform}",  # binaries and config files
+        ]
+
+        # Pre compile all the `.py` files into `.pyc` byte code
+        compileall = f"{prefix}/bin/python3 -m compileall"
+        options = [
+            # Force the compilation even if a `.pyc` already exists.
+            "-f",
+            # Place `.pyc` next to `.py` instead of in a `__pycache__` dir. We want this because
+            # we'll delete the `.py` file and have the `.pyc` be the one and only code file.
+            "-b",
+            # Since `.pyc` will be the one and only file, it will never be invalidated.
+            "--invalidation-mode unchecked-hash",
+            # Set optimization level to 0. Levels 1 removes asserts and level 2 removes docstrings.
+            # We don't gain much in performance from level 1 and level 2 is harmful (e.g. no more
+            # docs lookup in Jupyter notebooks). Level 0 is the default anyway.
+            "-o0",
+            # Drop the prefix pointing to the Conan package directory from the byte code so that it
+            # does not appear in exception messages and stack traces.
+            f"-s {prefix}",
+            # Skip files that we don't want to compile `keep_lib_dirs` or cannot be compiled because
+            # they are used as internal tests for CPython itself. This matches other invokations of
+            # `compileall` in the CPython codebase.
+            f"-x '{'|'.join(keep_lib_dirs)}|bad_coding|badsyntax|lib2to3/tests/data'",
+            # Use as many compiler workers as there are CPU threads.
+            "-j0",
+        ]
+        lib = prefix / f"lib/python{self.short_pyversion}"
+        self.run(f"{compileall} {' '.join(options)} {lib}")
+
+        # Zip all the `.pyc` files
+        zip_name = prefix / f"lib/python{self.int_pyversion}.zip"
+        compression = getattr(zipfile, f"ZIP_{str(self.options.zip_stdlib).upper()}")
+        with zipfile.ZipFile(zip_name, "w", compression) as zf:
+            for root, dir_names, file_names in os.walk(lib):
+                skip = keep_lib_dirs + ["__pycache__"]
+                dir_names[:] = [d for d in dir_names if d not in skip]
+
+                for pyc_file in (pathlib.Path(root, f) for f in file_names if f.endswith(".pyc")):
+                    zf.write(pyc_file, arcname=str(pyc_file.relative_to(lib)))
+
+        def is_landmark(filepath):
+            """Older Python version require `os.py(c)` to use as a landmark for the stdlib"""
+            return self.pyversion < "3.11.0" and filepath.name == "os.pyc"
+
+        # Delete everything that we can in `lib`: the `.zip` takes over
+        for path in lib.iterdir():
+            if path.is_file() and not is_landmark(path):
+                path.unlink()
+            elif path.is_dir() and path.name not in keep_lib_dirs:
+                shutil.rmtree(path)
+
     def package(self):
         src = self.build_folder
         dst = pathlib.Path(self.package_folder, "embedded_python")
@@ -176,6 +257,9 @@ class EmbeddedPythonCore(ConanFile):
                 dst=license_folder,
                 keep_path=False,
             )
+
+            if self.options.zip_stdlib != "no":
+                self._zip_stdlib(dst)
 
     def package_info(self):
         self.env_info.PYTHONPATH.append(self.package_folder)
