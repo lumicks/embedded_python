@@ -7,6 +7,7 @@
   - The Python packages are now installed directly into the `package` folder instead of going via the `build` folder. This speeds up the packaging and reduces space usage since there's no more file duplication.
   - With Python >= 3.11, the recipe now makes use of the new `./configure --disable-test-modules` option to avoid building and packaging CPython's internal tests.
 - Fixed a bug where deleting the recipe `build` folder would make the package unusable because the `package` folder accidentally contained symlinks to files in the `build` folder.
+- Fixed a bug on Windows where `pip install` would fail for packages that needed to build a wheel from source (e.g `git` requirements). 
 
 ## v1.5.4 | 2023-05-02
 

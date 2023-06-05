@@ -124,6 +124,11 @@ class EmbeddedPython(ConanFile):
         if self.settings.os == "Windows":
             # Deleting the ._pth file restores regular (non-embedded) module path rules
             os.remove(bootstrap / f"python{self.int_pyversion}._pth")
+            # Moving files to the `DLLs` folder restores non-embedded folder structure
+            dlls = bootstrap / "DLLs"
+            dlls.mkdir(exist_ok=True)
+            for file in bootstrap.glob("*.pyd"):
+                file.rename(dlls / file.name)
             # We need pip to install packages
             files.download(self, "https://bootstrap.pypa.io/get-pip.py", filename="get-pip.py")
             self.run(f"{self.bootstrap_py_exe} get-pip.py")
