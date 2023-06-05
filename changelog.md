@@ -8,6 +8,7 @@
   - With Python >= 3.11, the recipe now makes use of the new `./configure --disable-test-modules` option to avoid building and packaging CPython's internal tests.
 - Fixed a bug where deleting the recipe `build` folder would make the package unusable because the `package` folder accidentally contained symlinks to files in the `build` folder.
 - Fixed a bug on Windows where `pip install` would fail for packages that needed to build a wheel from source (e.g `git` requirements). 
+- Fixed a bug on Windows where `embedded_python_tools` would fail when the source and destination were on different network drives. It will now fall back to `files.copy()` in case `CreateJunction()` is not possible. 
 
 ## v1.5.4 | 2023-05-02
 
