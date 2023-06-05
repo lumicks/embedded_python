@@ -1,6 +1,9 @@
+import itertools
 import os
 import re
+import shutil
 import pathlib
+import subprocess
 from conan import ConanFile
 from conan.tools import files, scm
 
@@ -175,6 +178,53 @@ class EmbeddedPython(ConanFile):
         self._gather_licenses()
         self._gather_packages()
 
+    def _clear_dist_info(self, prefix):
+        import zipfile
+
+        if self.settings.os == "Windows":
+            site_packages = prefix / "Lib/site-packages"
+        else:
+            site_packages = prefix / f"lib/python{self.short_pyversion}/site-packages"
+
+        for entry in site_packages.glob("*.dist-info"):
+            shutil.rmtree(entry)
+
+        zip_name = site_packages / "site-packages.zip"
+        # compression = getattr(zipfile, f"ZIP_{str(self.options.zip_stdlib).upper()}")
+        with zipfile.ZipFile(zip_name, "w") as zf:
+            folders = (
+                p for p in site_packages.iterdir() if p.is_dir() if not p.name.startswith("_")
+            )
+            for folder in folders:
+                all_files = itertools.chain(
+                    *(file_names for root, dir_names, file_names in os.walk(folder))
+                )
+                is_pure_py = all(
+                    f.endswith(".py") or f.endswith(".pyc") or f == "py.typed" for f in all_files
+                )
+                if not is_pure_py:
+                    continue
+
+                compileall = f"{self.bootstrap_py_exe} -m compileall"
+                options = f"-f -b -o0 -j0 --invalidation-mode unchecked-hash -s {prefix}"
+                self.run(f"{compileall} {options} {folder}")
+
+                for root, dir_names, file_names in os.walk(folder):
+                    if "__pycache__" in dir_names:
+                        shutil.rmtree(pathlib.Path(root, "__pycache__"))
+                        dir_names.remove("__pycache__")
+
+                    file_paths = (
+                        pathlib.Path(root, name) for name in file_names if not name.endswith(".py")
+                    )
+                    for file in file_paths:
+                        zf.write(file, arcname=str(file.relative_to(site_packages)))
+
+                shutil.rmtree(folder)
+
+        with open(site_packages / "site-packages.pth", "w") as f:
+            f.write("site-packages.zip\n")
+
     def package(self):
         files.copy(self, "embedded_python*", src=self.core_pkg, dst=self.package_folder)
         prefix = pathlib.Path(self.package_folder, "embedded_python")
@@ -195,6 +245,7 @@ class EmbeddedPython(ConanFile):
         )
         options = f'--no-deps --ignore-installed --no-warn-script-location --prefix "{prefix}"'
         self.run(f"{self.bootstrap_py_exe} -m pip install {options} -r {requirements}")
+        self._clear_dist_info(prefix)
         files.copy(self, "package_licenses.txt", src=self.build_folder, dst=license_folder)
         files.copy(self, "packages.txt", src=self.build_folder, dst=license_folder)
 
