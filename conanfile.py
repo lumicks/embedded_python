@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 import pathlib
 from conan import ConanFile
 from conan.tools import files, scm
@@ -23,6 +24,7 @@ class EmbeddedPython(ConanFile):
         "pip_licenses_version": ["ANY"],
         "setuptools_version": ["ANY"],
         "wheel_version": ["ANY"],
+        "zip_packages": ["no", "stored", "deflated"],
     }
     default_options = {
         "packages": None,
@@ -30,6 +32,7 @@ class EmbeddedPython(ConanFile):
         "pip_licenses_version": "4.4.0",
         "setuptools_version": "69.5.1",
         "wheel_version": "0.43.0",
+        "zip_packages": "stored",
     }
     short_paths = True  # some of the pip packages go over the 260 char path limit on Windows
     exports_sources = "embedded_python.cmake"
@@ -69,6 +72,24 @@ class EmbeddedPython(ConanFile):
             return pathlib.Path(self.package_folder, "embedded_python/python")
         else:
             return pathlib.Path(self.package_folder, "embedded_python/bin/python3")
+
+    @property
+    def site_packages_name(self) -> str:
+        if self.settings.os == "Windows":
+            return "Lib/site-packages"
+        else:
+            return f"lib/python{self.short_pyversion}/site-packages"
+
+    @property
+    def site_packages_path(self) -> pathlib.Path:
+        return pathlib.Path(self.package_folder, "embedded_python", self.site_packages_name)
+
+    @property
+    def _pth_filename(self) -> str:
+        if self.settings.os == "Windows":
+            return f"python{self.int_pyversion}._pth"
+        else:
+            return f"python{self.short_pyversion}._pth"
 
     def make_package_list(self):
         """Create a list of package names based on `self.options.packages`
@@ -123,11 +144,10 @@ class EmbeddedPython(ConanFile):
         files.copy(self, "*", src=self.core_pkg / "embedded_python", dst=bootstrap)
 
         # Deleting the ._pth file restores regular (non-embedded) module path rules
-        if self.settings.os != "Windows":
-            os.remove(bootstrap / f"python{self.short_pyversion}._pth")
-        else:
-            os.remove(bootstrap / f"python{self.int_pyversion}._pth")
-            # Moving files to the `DLLs` folder restores non-embedded folder structure
+        os.remove(bootstrap / self._pth_filename)
+
+        # Moving files to the `DLLs` folder restores non-embedded folder structure
+        if self.settings.os == "Windows":
             dlls = bootstrap / "DLLs"
             dlls.mkdir(exist_ok=True)
             for file in bootstrap.glob("*.pyd"):
@@ -182,6 +202,70 @@ class EmbeddedPython(ConanFile):
 
         self._build_bootstrap()
 
+    def _clear_dist_info(self):
+        for entry in self.site_packages_path.glob("*.dist-info"):
+            shutil.rmtree(entry)
+
+    def _zip_packages(self, prefix):
+        import zipfile
+
+        zip_name = self.site_packages_path / "site-packages.zip"
+        compression = getattr(zipfile, f"ZIP_{str(self.options.zip_packages).upper()}")
+        with zipfile.ZipFile(zip_name, "w", compression) as zf:
+            folders = [
+                p
+                for p in self.site_packages_path.iterdir()
+                if p.is_dir()
+                if not p.name.startswith("_distutils_hack")
+            ]
+            for folder in folders:
+                if not (folder / "__init__.py").exists():
+                    continue
+
+                all_files = (
+                    pathlib.Path(root, name)
+                    for root, dir_names, file_names in os.walk(folder)
+                    for name in file_names
+                )
+                is_pure_py = all(
+                    f.name.endswith(".py")
+                    or f.name.endswith(".pyc")
+                    or f.name.endswith(".pyi")
+                    or f.name.endswith(".1")
+                    or f.name.endswith(".md")
+                    or f.name.endswith(".rst")
+                    or f.name == "py.typed"
+                    or "tests" in f.parts
+                    or "test" in f.parts
+                    or "benchmarks" in f.parts
+                    or "benchmark" in f.parts
+                    for f in all_files
+                )
+                if not is_pure_py:
+                    continue
+
+                compileall = f"{self.bootstrap_py_exe} -m compileall"
+                options = f"-f -b -o0 -j0 --invalidation-mode unchecked-hash -s {prefix}"
+                self.run(f"{compileall} {options} {folder}")
+
+                for root, dir_names, file_names in os.walk(folder):
+                    if "__pycache__" in dir_names:
+                        shutil.rmtree(pathlib.Path(root, "__pycache__"))
+                        dir_names.remove("__pycache__")
+
+                    file_paths = (
+                        pathlib.Path(root, name) for name in file_names if not name.endswith(".py")
+                    )
+                    for file in file_paths:
+                        zf.write(file, arcname=str(file.relative_to(self.site_packages_path)))
+
+                shutil.rmtree(folder)
+
+        with open(self.site_packages_path / "site-packages.pth", "w") as f:
+            f.write("site-packages.zip\n")
+        with open(prefix / self._pth_filename, "a") as f:
+            f.write(f"\n{self.site_packages_name}/site-packages.zip")
+
     def package(self):
         files.copy(self, "embedded_python.cmake", src=self.build_folder, dst=self.package_folder)
         files.copy(self, "embedded_python*", src=self.core_pkg, dst=self.package_folder)
@@ -200,6 +284,9 @@ class EmbeddedPython(ConanFile):
         self._run_bootstrap_py(f"-m pip install {options} -r {requirements}")
         self._gather_licenses(license_folder)
         self._gather_packages(license_folder)
+        self._clear_dist_info()
+        if self.options.zip_packages != "no":
+            self._zip_packages(prefix)
 
     def package_info(self):
         self.env_info.PYTHONPATH.append(self.package_folder)
