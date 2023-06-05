@@ -9,7 +9,10 @@ def _symlink_compat(conanfile, src, dst):
     if conanfile.settings.os == "Windows":
         import _winapi
 
-        _winapi.CreateJunction(str(src), str(dst))
+        try:
+            _winapi.CreateJunction(str(src), str(dst))
+        except OSError:
+            copy(conanfile, "*", src, dst)
     else:
         os.symlink(src, dst)
 
