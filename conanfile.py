@@ -10,7 +10,7 @@ required_conan_version = ">=1.59.0"
 # noinspection PyUnresolvedReferences
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.6.0"  # of the Conan package, `options.version` is the Python version
+    version = "1.7.0"  # of the Conan package, `options.version` is the Python version
     license = "PSFL"
     description = "Embedded distribution of Python"
     topics = "embedded", "python"
@@ -68,6 +68,13 @@ class EmbeddedPython(ConanFile):
             return pathlib.Path(self.build_folder, "bootstrap/python")
         else:
             return pathlib.Path(self.build_folder, "bootstrap/bin/python3")
+
+    @property
+    def package_py_exe(self):
+        if self.settings.os == "Windows":
+            return pathlib.Path(self.package_folder, "embedded_python/python")
+        else:
+            return pathlib.Path(self.package_folder, "embedded_python/bin/python3")
 
     def make_package_list(self):
         """Create a list of package names based on `self.options.packages`
@@ -137,34 +144,26 @@ class EmbeddedPython(ConanFile):
             f"pip=={self.options.pip_version}",
             f"setuptools=={self.options.setuptools_version}",
             f"wheel=={self.options.wheel_version}",
+            f"pip-licenses=={self.options.pip_licenses_version}",
         ]
         options = "--no-warn-script-location --upgrade"
         self.run(f"{self.bootstrap_py_exe} -m pip install {options} {' '.join(specs)}")
 
-    def _gather_licenses(self):
-        """Gather licenses for all packages using our bootstrap environment
-
-        We can't run `pip-licenses` in the final environment because it doesn't have `pip`.
-        So we install the same packages in the bootstrap env and run `pip-licenses` there.
-        This will dump a bunch of packages into bootstrap but it doesn't matter since we
-        won't be using it for anything else afterward.
-        """
-        exe = self.bootstrap_py_exe
-        requirements = self._make_requirements_file(
-            extra_packages=[f"pip-licenses=={self.options.pip_licenses_version}"]
-        )
-        self.run(f"{exe} -m pip install --no-warn-script-location -r {requirements}")
+    def _gather_licenses(self, license_folder):
+        """Gather licenses for all packages using our bootstrap environment"""
         self.run(
-            f"{exe} -m piplicenses --with-system --from=mixed --format=plain-vertical"
-            f" --with-license-file --no-license-path --output-file=package_licenses.txt"
+            f"{self.bootstrap_py_exe} -m piplicenses --python={self.package_py_exe}"
+            " --with-system --from=mixed --format=plain-vertical"
+            " --with-license-file --no-license-path --output-file=package_licenses.txt",
+            cwd=license_folder,
         )
 
-    def _gather_packages(self):
+    def _gather_packages(self, license_folder):
         """Gather all the required packages into a file for future reference"""
         matcher = re.compile(r"^([\w.-]+)==[\w.-]+$")
         matches = map(matcher.match, self.make_package_list())
         package_names = (match.group(1) for match in filter(None, matches))
-        with open("packages.txt", "w") as output:
+        with open(license_folder / "packages.txt", "w") as output:
             output.write("\n".join(package_names))
 
     def build(self):
@@ -172,8 +171,6 @@ class EmbeddedPython(ConanFile):
             return
 
         self._build_bootstrap()
-        self._gather_licenses()
-        self._gather_packages()
 
     def package(self):
         files.copy(self, "embedded_python*", src=self.core_pkg, dst=self.package_folder)
@@ -195,8 +192,8 @@ class EmbeddedPython(ConanFile):
         )
         options = f'--no-deps --ignore-installed --no-warn-script-location --prefix "{prefix}"'
         self.run(f"{self.bootstrap_py_exe} -m pip install {options} -r {requirements}")
-        files.copy(self, "package_licenses.txt", src=self.build_folder, dst=license_folder)
-        files.copy(self, "packages.txt", src=self.build_folder, dst=license_folder)
+        self._gather_licenses(license_folder)
+        self._gather_packages(license_folder)
 
     def package_info(self):
         self.env_info.PYTHONPATH.append(self.package_folder)
