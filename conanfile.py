@@ -37,7 +37,7 @@ class EmbeddedPython(ConanFile):
     short_paths = True  # some of the pip packages go over the 260 char path limit on Windows
 
     def requirements(self):
-        self.requires(f"embedded_python-core/1.0.0@{self.user}/{self.channel}")
+        self.requires(f"embedded_python-core/1.1.0@{self.user}/{self.channel}")
 
     def configure(self):
         self.options["embedded_python-core"].version = self.options.version

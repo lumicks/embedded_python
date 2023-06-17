@@ -12,7 +12,7 @@ required_conan_version = ">=1.59.0"
 # noinspection PyUnresolvedReferences
 class EmbeddedPythonCore(ConanFile):
     name = "embedded_python-core"
-    version = "1.0.0"  # of the Conan package, `options.version` is the Python version
+    version = "1.1.0"  # of the Conan package, `options.version` is the Python version
     license = "PSFL"
     description = "The core embedded Python (no extra pip packages)"
     topics = "embedded", "python"
@@ -107,6 +107,7 @@ class EmbeddedPythonCore(ConanFile):
         openssl_path = self.dependencies[openssl_pck].package_folder
         tc.configure_args += [
             "--enable-shared",
+            "--without-static-libpython",
             "--disable-test-modules",
             f"--with-openssl={openssl_path}",
         ]
