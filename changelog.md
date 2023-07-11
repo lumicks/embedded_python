@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.8.0 | In development
+
+- The `openssl_variant` is now obsolete. The flag is still there for backwards compatibility but it no longer does anything.
+
 ## v1.7.0 | 2023-06-22
 
 - Recipe build performance and Conan cache usage have been improved further (on top of the improvements in v1.6.0) by optimizing the way licenses are gathered. The recipe now takes advantage of a new feature in `pip-license` v4.2.0 to gather licenses from an external environment. This way, we don't need to re-install packages just to gather licenses, thus cutting both build time and Conan cache usage in half.
