@@ -35,6 +35,7 @@ class EmbeddedPython(ConanFile):
         "openssl_variant": "lowercase",
     }
     short_paths = True  # some of the pip packages go over the 260 char path limit on Windows
+    exports_sources = "embedded_python.cmake"
 
     def requirements(self):
         self.requires(f"embedded_python-core/1.2.0@{self.user}/{self.channel}")
@@ -172,6 +173,7 @@ class EmbeddedPython(ConanFile):
         self._build_bootstrap()
 
     def package(self):
+        files.copy(self, "embedded_python.cmake", src=self.build_folder, dst=self.package_folder)
         files.copy(self, "embedded_python*", src=self.core_pkg, dst=self.package_folder)
         prefix = pathlib.Path(self.package_folder, "embedded_python")
         if self.settings.os == "Windows":

@@ -3,8 +3,9 @@ project(test_package)
 
 find_package(embedded_python-core)
 
-if(NOT Python_EXECUTABLE MATCHES "embedded_python")
-    message(FATAL_ERROR "`cmake` failed to find the correct Python")
+message(STATUS "Python_EXECUTABLE: ${Python_EXECUTABLE}")
+if(NOT Python_EXECUTABLE MATCHES "embedded_python-core")
+    message(FATAL_ERROR "CMake failed to find the correct Python")
 endif()
 
 add_executable(test_package src/main.cpp)
