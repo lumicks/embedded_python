@@ -62,7 +62,13 @@ class EmbeddedPythonCore(ConanFile):
             else:
                 self.requires("mpdecimal/2.5.0")
 
-        self.requires("openssl/1.1.1k")
+        # `openssl` v3.1.1 is no-go for macOS ARM: https://github.com/openssl/openssl/issues/20753
+        # The fix will be in v3.1.2: https://github.com/openssl/openssl/pull/21261
+        # Go with v3.0.8 until this is resolved.
+        if self.pyversion >= scm.Version("3.10.0"):
+            self.requires("openssl/3.0.8")
+        else:
+            self.requires("openssl/1.1.1u")
 
     @property
     def pyversion(self):
@@ -113,6 +119,24 @@ class EmbeddedPythonCore(ConanFile):
             deps.environment.append(
                 "LDFLAGS", [r"-Wl,-rpath='\$\$ORIGIN/../lib'", "-Wl,--disable-new-dtags"]
             )
+
+        # Statically linking CPython with OpenSSL requires a bit of extra care. See the discussion
+        # here: https://bugs.python.org/issue43466. This is marked as unofficially supported by the
+        # CPython build system, but we do still want to allow it since static libraries are the
+        # default for Conan, and recipe users will have the choice to accept the tradeoffs. When
+        # using static OpenSSL, features like DSO engines or external OSSL providers don't work.
+        #
+        # On Linux, setting a single env variable is enough:
+        # https://github.com/python/cpython/commit/bacefbf41461ab703b8d561f0e3d766427eab367
+        # On macOS, the linker works differently so a heavy workaround isn't needed. But we
+        # do need to ensure that the linker is aware of `libz`:
+        # https://github.com/python/cpython/commit/5f87915d4af724f375b00dde2b948468d3e4ca97
+        if not self.dependencies["openssl"].options.shared:
+            if self.settings.os == "Linux":
+                deps.environment.define("PY_UNSUPPORTED_OPENSSL_BUILD", "static")
+            elif self.settings.os == "Macos":
+                deps.environment.append("LDFLAGS", ["-lz"])
+
         deps.generate()
 
     def build(self):

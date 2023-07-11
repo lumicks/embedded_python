@@ -2,6 +2,8 @@
 
 ## v1.8.0 | In development
 
+- Added support for building with `openssl` v3 for Python 3.10 and newer.
+- `openssl` v3.0.8 is now the default for Python >= 3.10 and `openssl` v1.1.1u is the default for Python 3.9.
 - The `openssl_variant` is now obsolete. The flag is still there for backwards compatibility but it no longer does anything.
 
 ## v1.7.0 | 2023-06-22
