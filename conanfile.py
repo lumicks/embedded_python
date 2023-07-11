@@ -10,7 +10,7 @@ required_conan_version = ">=1.59.0"
 # noinspection PyUnresolvedReferences
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.7.0"  # of the Conan package, `options.version` is the Python version
+    version = "1.8.0"  # of the Conan package, `options.version` is the Python version
     license = "PSFL"
     description = "Embedded distribution of Python"
     topics = "embedded", "python"
@@ -24,7 +24,7 @@ class EmbeddedPython(ConanFile):
         "pip_licenses_version": ["ANY"],
         "setuptools_version": ["ANY"],
         "wheel_version": ["ANY"],
-        "openssl_variant": ["lowercase", "uppercase"],  # see explanation in `build_requirements()`
+        "openssl_variant": ["lowercase", "uppercase"],  # OBSOLETE: only here for compatibility
     }
     default_options = {
         "packages": None,
@@ -37,11 +37,10 @@ class EmbeddedPython(ConanFile):
     short_paths = True  # some of the pip packages go over the 260 char path limit on Windows
 
     def requirements(self):
-        self.requires(f"embedded_python-core/1.1.0@{self.user}/{self.channel}")
+        self.requires(f"embedded_python-core/1.2.0@{self.user}/{self.channel}")
 
     def configure(self):
         self.options["embedded_python-core"].version = self.options.version
-        self.options["embedded_python-core"].openssl_variant = self.options.openssl_variant
 
     @property
     def pyversion(self):

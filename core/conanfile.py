@@ -12,7 +12,7 @@ required_conan_version = ">=1.59.0"
 # noinspection PyUnresolvedReferences
 class EmbeddedPythonCore(ConanFile):
     name = "embedded_python-core"
-    version = "1.1.0"  # of the Conan package, `options.version` is the Python version
+    version = "1.2.0"  # of the Conan package, `options.version` is the Python version
     license = "PSFL"
     description = "The core embedded Python (no extra pip packages)"
     topics = "embedded", "python"
@@ -21,11 +21,9 @@ class EmbeddedPythonCore(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {
         "version": ["ANY"],
-        "openssl_variant": ["lowercase", "uppercase"],  # see explanation in `build_requirements()`
         "zip_stdlib": ["no", "stored", "deflated"],
     }
     default_options = {
-        "openssl_variant": "lowercase",
         "zip_stdlib": "stored",
     }
     exports_sources = "embedded_python_tools.py", "embedded_python.cmake"
@@ -64,14 +62,7 @@ class EmbeddedPythonCore(ConanFile):
             else:
                 self.requires("mpdecimal/2.5.0")
 
-        # The pre-conan-center-index version of `openssl` was capitalized as `OpenSSL`.
-        # Both versions can't live in the same Conan cache so we need this compatibility
-        # option to pick the available version. The cache case-sensitivity issue should
-        # be solved in Conan 2.0, but we need this for now.
-        if self.options.openssl_variant == "lowercase":
-            self.requires("openssl/1.1.1k")
-        else:
-            self.requires("OpenSSL/1.1.1m")
+        self.requires("openssl/1.1.1k")
 
     @property
     def pyversion(self):
@@ -103,8 +94,7 @@ class EmbeddedPythonCore(ConanFile):
         files.get(self, url, strip_root=True)
 
         tc = AutotoolsToolchain(self, prefix=pathlib.Path(self.package_folder, "embedded_python"))
-        openssl_pck = "openssl" if self.options.openssl_variant == "lowercase" else "OpenSSL"
-        openssl_path = self.dependencies[openssl_pck].package_folder
+        openssl_path = self.dependencies["openssl"].package_folder
         tc.configure_args += [
             "--enable-shared",
             "--without-static-libpython",
