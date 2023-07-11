@@ -1,10 +1,11 @@
 # Changelog
 
-## v1.8.0 | In development
+## v1.8.0 | 2023-07-12
 
 - Added support for building with `openssl` v3 for Python 3.10 and newer.
 - `openssl` v3.0.8 is now the default for Python >= 3.10 and `openssl` v1.1.1u is the default for Python 3.9.
 - The `openssl_variant` is now obsolete. The flag is still there for backwards compatibility but it no longer does anything.
+- The `EmbeddedPython_EXECUTABLE` CMake variable is now defined and points to the executable that's aware of the full embedded Python environment with `pip` packages. `Python_EXECUTABLE` points to the `core` executable that's only aware of the standard library. This split ensures that we compile and link against `core` in order to avoid rebuilding the world when only the Python environment packages change but the version/headers/libs stay the same.  
 
 ## v1.7.0 | 2023-06-22
 
