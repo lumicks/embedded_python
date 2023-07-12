@@ -200,9 +200,6 @@ class EmbeddedPython(ConanFile):
         self.env_info.PYTHONPATH.append(self.package_folder)
         self.cpp_info.set_property("cmake_build_modules", ["embedded_python.cmake"])
         self.cpp_info.build_modules = ["embedded_python.cmake"]
-        prefix = pathlib.Path(self.package_folder) / "embedded_python"
-        self.cpp_info.includedirs = [str(prefix / "include")]
-        if self.settings.os == "Windows":
-            self.cpp_info.bindirs = [str(prefix)]
-        else:
-            self.cpp_info.libdirs = [str(prefix / "lib")]
+        self.cpp_info.includedirs = []
+        self.cpp_info.bindirs = []
+        self.cpp_info.libdirs = []

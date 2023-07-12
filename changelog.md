@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.8.1 | In development
+
+- Fixed Python include dirs being added twice (didn't cause any issues, just noise on the command line).
+
 ## v1.8.0 | 2023-07-12
 
 - Added support for building with `openssl` v3 for Python 3.10 and newer.
