@@ -10,7 +10,7 @@ required_conan_version = ">=1.59.0"
 # noinspection PyUnresolvedReferences
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.8.0"  # of the Conan package, `options.version` is the Python version
+    version = "1.8.1"  # of the Conan package, `options.version` is the Python version
     license = "PSFL"
     description = "Embedded distribution of Python"
     topics = "embedded", "python"
@@ -38,7 +38,7 @@ class EmbeddedPython(ConanFile):
     exports_sources = "embedded_python.cmake"
 
     def requirements(self):
-        self.requires(f"embedded_python-core/1.2.0@{self.user}/{self.channel}")
+        self.requires(f"embedded_python-core/1.2.1@{self.user}/{self.channel}")
 
     def configure(self):
         self.options["embedded_python-core"].version = self.options.version

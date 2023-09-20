@@ -12,7 +12,7 @@ required_conan_version = ">=1.59.0"
 # noinspection PyUnresolvedReferences
 class EmbeddedPythonCore(ConanFile):
     name = "embedded_python-core"
-    version = "1.2.0"  # of the Conan package, `options.version` is the Python version
+    version = "1.2.1"  # of the Conan package, `options.version` is the Python version
     license = "PSFL"
     description = "The core embedded Python (no extra pip packages)"
     topics = "embedded", "python"
@@ -248,7 +248,7 @@ class EmbeddedPythonCore(ConanFile):
             # We also need headers and the `python3.lib` file to link against
             url = f"https://www.python.org/ftp/python/{self.pyversion}/amd64/dev.msi"
             files.download(self, url, filename="tmp\\dev.msi")
-            self.run(f"msiexec.exe /qn /a {self.build_folder}\\tmp\\dev.msi targetdir={dst}")
+            self.run(f'msiexec.exe /qn /a "{self.build_folder}\\tmp\\dev.msi" targetdir="{dst}"')
             files.rmdir(self, "tmp")
             files.rm(self, "dev.msi", dst)
 

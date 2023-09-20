@@ -2,6 +2,7 @@
 
 ## v1.8.1 | In development
 
+- Fixed packaging error on Windows when the Conan cache path contains spaces.
 - Fixed Python include dirs being added twice (didn't cause any issues, just noise on the command line).
 
 ## v1.8.0 | 2023-07-12
