@@ -7,7 +7,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        embedded-py: [3.9.8, 3.11.3]
+        embedded-py: [3.9.8, 3.11.5]
     env:
       create_pck: conan create . lumicks/testing -o embedded_python:version=${{ matrix.embedded-py }} --build=missing
     steps:
