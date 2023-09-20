@@ -62,13 +62,10 @@ class EmbeddedPythonCore(ConanFile):
             else:
                 self.requires("mpdecimal/2.5.0")
 
-        # `openssl` v3.1.1 is no-go for macOS ARM: https://github.com/openssl/openssl/issues/20753
-        # The fix will be in v3.1.2: https://github.com/openssl/openssl/pull/21261
-        # Go with v3.0.8 until this is resolved.
         if self.pyversion >= scm.Version("3.11.0"):
-            self.requires("openssl/3.0.8")
+            self.requires("openssl/3.1.2")
         else:
-            self.requires("openssl/1.1.1u")
+            self.requires("openssl/1.1.1w")
 
     @property
     def pyversion(self):

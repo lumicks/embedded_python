@@ -5,6 +5,7 @@
 - Fixed packaging error on Windows when the Conan cache path contains spaces.
 - Fixed Python include dirs being added twice (didn't cause any issues, just noise on the command line).
 - Fixed `openssl` v3 mistakenly being enabled for Python 3.10. While 3.10 has preliminary support for `openssl` v3, Python 3.11 is the real minimum requirement for full support.
+- Bumped default `openssl` to 1.1.1w for Python < 3.11 and v3.1.2 for Python >= 3.11.
 
 ## v1.8.0 | 2023-07-12
 
