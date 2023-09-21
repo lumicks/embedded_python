@@ -96,9 +96,11 @@ class EmbeddedPythonCore(ConanFile):
         url = f"https://github.com/python/cpython/archive/v{self.pyversion}.tar.gz"
         files.get(self, url, strip_root=True)
 
-        tc = AutotoolsToolchain(self, prefix=pathlib.Path(self.package_folder, "embedded_python"))
+        prefix = pathlib.Path(self.package_folder, "embedded_python")
+        tc = AutotoolsToolchain(self, prefix=prefix)
         openssl_path = self.dependencies["openssl"].package_folder
         tc.configure_args += [
+            f"--bindir={prefix}",  # see `_isolate()` for the reason why we override this path
             "--enable-shared",
             "--without-static-libpython",
             "--disable-test-modules",
@@ -114,7 +116,7 @@ class EmbeddedPythonCore(ConanFile):
         # package. Unlike RUNPATH, RPATH takes precedence over LD_LIBRARY_PATH.
         if self.settings.os == "Linux":
             deps.environment.append(
-                "LDFLAGS", [r"-Wl,-rpath='\$\$ORIGIN/../lib'", "-Wl,--disable-new-dtags"]
+                "LDFLAGS", [r"-Wl,-rpath='\$\$ORIGIN/lib'", "-Wl,--disable-new-dtags"]
             )
 
         # Statically linking CPython with OpenSSL requires a bit of extra care. See the discussion
@@ -151,14 +153,14 @@ class EmbeddedPythonCore(ConanFile):
         if self.settings.os != "Macos":
             return
 
-        exe = dst / f"bin/python{self.short_pyversion}"
+        exe = dst / f"python{self.short_pyversion}"
         buffer = io.StringIO()
         self.run(f"otool -L {exe}", output=buffer)
         lines = buffer.getvalue().strip().split("\n")[1:]
         libraries = [line.split()[0] for line in lines]
         hardcoded_libraries = [lib for lib in libraries if lib.startswith(str(dst))]
         for lib in hardcoded_libraries:
-            relocatable_library = lib.replace(str(dst), "@executable_path/..")
+            relocatable_library = lib.replace(str(dst), "@executable_path")
             self.output.info(f"Patching {exe}, replace {lib} with {relocatable_library}")
             self.run(f"install_name_tool -change {lib} {relocatable_library} {exe}")
 
@@ -230,6 +232,57 @@ class EmbeddedPythonCore(ConanFile):
             elif path.is_dir() and path.name not in keep_lib_dirs:
                 shutil.rmtree(path)
 
+    def _isolate(self, prefix):
+        """Isolate this embedded environment from any other Python installations
+
+        Creating a `._pth` file puts Python into isolated mode: it will ignore any `PYTHON*`
+        env variables or additional packages installed in the users home directory. Only
+        the paths listed in the `._pth` file will be in `sys.path` on startup.
+
+        There's an extra quirk that complicates things on non-Windows systems. The `._pth` file
+        must be in the same directory as the real (non-symlink) executable, but it also must be
+        in the home/prefix directory. Usually, the executable is in `prefix/bin`. This forces us
+        to move the executable to `prefix` (this is done in `generate()`). To avoid issues with
+        established Unix Python conventions, we put symlinks back into `prefix/bin`. This is not
+        an issue on Windows since it already has `bin == prefix` by default.
+
+        Note that `._pth == isolated_mode` is only the case when running Python via the `python(3)`
+        executable. When embedding into an application executable, the `._pth` file is not relevant.
+        Isolated mode is set via the C API: https://docs.python.org/3/c-api/init_config.html While
+        embedding in the app is the primary use case, running the `python(3)` exe is also useful
+        for various build and runtime tasks. It's important to maintain isolated mode in all cases
+        to avoid obscure, hard-to-debug issues.
+
+        Finally, both `-core` and regular variants of this recipe will have the `._pth` file in the
+        package. All installed `pip` packages work correctly at runtime in isolated mode. However,
+        some older packages cannot be installed in isolated mode (they are using outdated `setup.py`
+        conventions). For this reason, we temporarily delete the `._pth` file and fall back to
+        partial isolation while installing `pip` packages. See `_build_bootstrap()` for details.
+        """
+        if self.settings.os == "Windows":
+            paths = [
+                f"python{self.int_pyversion}.zip",
+                ".",
+                "Lib/site-packages",
+            ]
+            # `.pth` file must be next to the main `.dll` and use the same name.
+            with open(prefix / f"python{self.int_pyversion}._pth", "w") as f:
+                f.write("\n".join(paths))
+        else:
+            paths = [
+                f"lib/python{self.int_pyversion}.zip",
+                f"lib/python{self.short_pyversion}",
+                f"lib/python{self.short_pyversion}/lib-dynload",
+                f"lib/python{self.short_pyversion}/site-packages",
+            ]
+            # `.pth` file must be next to real (non-symlink) executable and use the same name.
+            with open(prefix / f"python{self.short_pyversion}._pth", "w") as f:
+                f.write("\n".join(paths))
+
+            py_exe = f"python{self.short_pyversion}"
+            os.symlink(f"../{py_exe}", prefix / f"bin/{py_exe}")
+            os.symlink(f"../{py_exe}", prefix / f"bin/python3")
+
     def package(self):
         src = self.build_folder
         dst = pathlib.Path(self.package_folder, "embedded_python")
@@ -249,6 +302,7 @@ class EmbeddedPythonCore(ConanFile):
             files.rmdir(self, "tmp")
             files.rm(self, "dev.msi", dst)
 
+            self._isolate(dst)
             files.copy(self, "LICENSE.txt", src=dst, dst=license_folder)
         else:
             from conan.tools.gnu import Autotools
@@ -256,6 +310,7 @@ class EmbeddedPythonCore(ConanFile):
             autotools = Autotools(self)
             autotools.install(args=["DESTDIR=''"])  # already handled by AutotoolsToolchain prefix
             self._patch_libpython_path(dst)
+            self._isolate(dst)
 
             # Give write permissions, otherwise end-user projects won't be able to re-import
             # the shared libraries (re-import happens on subsequent `conan install` runs).

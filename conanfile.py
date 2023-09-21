@@ -128,8 +128,10 @@ class EmbeddedPython(ConanFile):
         bootstrap = pathlib.Path(self.build_folder) / "bootstrap"
         files.copy(self, "*", src=self.core_pkg / "embedded_python", dst=bootstrap)
 
-        if self.settings.os == "Windows":
-            # Deleting the ._pth file restores regular (non-embedded) module path rules
+        # Deleting the ._pth file restores regular (non-embedded) module path rules
+        if self.settings.os != "Windows":
+            os.remove(bootstrap / f"python{self.short_pyversion}._pth")
+        else:
             os.remove(bootstrap / f"python{self.int_pyversion}._pth")
             # Moving files to the `DLLs` folder restores non-embedded folder structure
             dlls = bootstrap / "DLLs"
@@ -138,7 +140,7 @@ class EmbeddedPython(ConanFile):
                 file.rename(dlls / file.name)
             # We need pip to install packages
             files.download(self, "https://bootstrap.pypa.io/get-pip.py", filename="get-pip.py")
-            self.run(f"{self.bootstrap_py_exe} get-pip.py")
+            self._run_bootstrap_py("get-pip.py")
 
         specs = [
             f"pip=={self.options.pip_version}",
@@ -147,12 +149,26 @@ class EmbeddedPython(ConanFile):
             f"pip-licenses=={self.options.pip_licenses_version}",
         ]
         options = "--no-warn-script-location --upgrade"
-        self.run(f"{self.bootstrap_py_exe} -m pip install {options} {' '.join(specs)}")
+        self._run_bootstrap_py(f"-m pip install {options} {' '.join(specs)}")
+
+    def _run_bootstrap_py(self, command, **kwargs):
+        """Run `command` with the Python created by `_build_bootstrap()`
+
+        While we do need to mostly restore regular module path rules for the bootstrap, we still
+        don't want to get conflicts with packages installed in the user's home directory. We can
+        disable those via env variable. Again, this is only for bootstrapping. The final package
+        will be fully isolated via the `._pth` file.
+
+        Here, we can't use `-I` because that also removes the current script directory from the
+        path which is a problem for older packages with outdated `setup.py` conventions. `-E -s`
+        gets us close enough to isolated mode without breaking the installation of old packages.
+        """
+        self.run(f"{self.bootstrap_py_exe} -E -s {command}", **kwargs)
 
     def _gather_licenses(self, license_folder):
         """Gather licenses for all packages using our bootstrap environment"""
-        self.run(
-            f"{self.bootstrap_py_exe} -m piplicenses --python={self.package_py_exe}"
+        self._run_bootstrap_py(
+            f"-m piplicenses --python={self.package_py_exe}"
             " --with-system --from=mixed --format=plain-vertical"
             " --with-license-file --no-license-path --output-file=package_licenses.txt",
             cwd=license_folder,
@@ -175,12 +191,6 @@ class EmbeddedPython(ConanFile):
     def package(self):
         files.copy(self, "embedded_python.cmake", src=self.build_folder, dst=self.package_folder)
         files.copy(self, "embedded_python*", src=self.core_pkg, dst=self.package_folder)
-        prefix = pathlib.Path(self.package_folder, "embedded_python")
-        if self.settings.os == "Windows":
-            # Enable site-packages, i.e. additional non-system packages
-            target = prefix / f"python{self.int_pyversion}._pth"
-            files.replace_in_file(self, target, "#import site", "import site")
-
         license_folder = pathlib.Path(self.package_folder, "licenses")
         files.copy(self, "LICENSE.txt", src=self.core_pkg / "licenses", dst=license_folder)
 
@@ -191,8 +201,9 @@ class EmbeddedPython(ConanFile):
         requirements = self._make_requirements_file(
             extra_packages=[f"setuptools=={self.options.setuptools_version}"]
         )
+        prefix = pathlib.Path(self.package_folder, "embedded_python")
         options = f'--no-deps --ignore-installed --no-warn-script-location --prefix "{prefix}"'
-        self.run(f"{self.bootstrap_py_exe} -m pip install {options} -r {requirements}")
+        self._run_bootstrap_py(f"-m pip install {options} -r {requirements}")
         self._gather_licenses(license_folder)
         self._gather_packages(license_folder)
 

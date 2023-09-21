@@ -1,7 +1,8 @@
 # Changelog
 
-## v1.8.1 | In development
+## v1.8.1 | 2023-10-02
 
+- Fixed packaging and runtime errors caused by conflicts with an incompatible system Python installation or `pip` packages installed in the user's home directory. The embedded Python now always run in isolated mode regardless of command line flags.
 - Fixed packaging error on Windows when the Conan cache path contains spaces.
 - Fixed Python include dirs being added twice (didn't cause any issues, just noise on the command line).
 - Fixed `openssl` v3 mistakenly being enabled for Python 3.10. While 3.10 has preliminary support for `openssl` v3, Python 3.11 is the real minimum requirement for full support.
