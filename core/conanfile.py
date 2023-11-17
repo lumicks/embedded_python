@@ -12,7 +12,7 @@ required_conan_version = ">=1.59.0"
 # noinspection PyUnresolvedReferences
 class EmbeddedPythonCore(ConanFile):
     name = "embedded_python-core"
-    version = "1.2.1"  # of the Conan package, `options.version` is the Python version
+    version = "1.2.2"  # of the Conan package, `options.version` is the Python version
     license = "PSFL"
     description = "The core embedded Python (no extra pip packages)"
     topics = "embedded", "python"
@@ -279,9 +279,11 @@ class EmbeddedPythonCore(ConanFile):
             with open(prefix / f"python{self.short_pyversion}._pth", "w") as f:
                 f.write("\n".join(paths))
 
+            bin_dir = prefix / "bin"
+            bin_dir.mkdir(parents=True, exist_ok=True)
             py_exe = f"python{self.short_pyversion}"
-            os.symlink(f"../{py_exe}", prefix / f"bin/{py_exe}")
-            os.symlink(f"../{py_exe}", prefix / f"bin/python3")
+            os.symlink(f"../{py_exe}", bin_dir / py_exe)
+            os.symlink(f"../{py_exe}", bin_dir / "python3")
 
     def package(self):
         src = self.build_folder
