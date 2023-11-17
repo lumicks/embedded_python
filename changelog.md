@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.8.2 | In development
+
+- Fixed a packaging error on Linux in case the `bin` directory was not created during build.
+
 ## v1.8.1 | 2023-10-02
 
 - Fixed packaging and runtime errors caused by conflicts with an incompatible system Python installation or `pip` packages installed in the user's home directory. The embedded Python now always run in isolated mode regardless of command line flags.
