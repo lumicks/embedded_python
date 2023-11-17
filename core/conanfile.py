@@ -53,7 +53,7 @@ class EmbeddedPythonCore(ConanFile):
         self.requires("sqlite3/3.42.0")
         self.requires("bzip2/1.0.8")
         self.requires("xz_utils/5.4.2")
-        self.requires("zlib/1.2.13")
+        self.requires("zlib/[>=1.2.11 <2]")
         if self.settings.os == "Linux":
             self.requires("libffi/3.4.4")
             self.requires("libuuid/1.0.3")
@@ -63,7 +63,7 @@ class EmbeddedPythonCore(ConanFile):
                 self.requires("mpdecimal/2.5.0")
 
         if self.pyversion >= scm.Version("3.11.0"):
-            self.requires("openssl/3.1.2")
+            self.requires("openssl/[>=3 <4]")
         else:
             self.requires("openssl/1.1.1w")
 

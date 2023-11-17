@@ -1,8 +1,9 @@
 # Changelog
 
-## v1.8.2 | In development
+## v1.8.2 | 2023-11-17
 
 - Fixed a packaging error on Linux in case the `bin` directory was not created during build.
+- Fixed `openssl` and `zlib` version compatibility by requiring version ranges instead of exact versions. 
 
 ## v1.8.1 | 2023-10-02
 
