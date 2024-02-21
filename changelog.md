@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.9.0 | In development
+
+- Removed the obsolete `openssl_variant` option.
+
 ## v1.8.2 | 2023-11-17
 
 - Fixed a packaging error on Linux in case the `bin` directory was not created during build.
