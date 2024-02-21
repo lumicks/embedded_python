@@ -3,6 +3,7 @@
 ## v1.9.0 | In development
 
 - Removed the obsolete `openssl_variant` option.
+- Removed redundant `embedded_python:version` option. Use `embedded_python-core:version`.
 
 ## v1.8.2 | 2023-11-17
 
