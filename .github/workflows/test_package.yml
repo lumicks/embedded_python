@@ -9,7 +9,7 @@ jobs:
         os: [windows-latest, ubuntu-latest, macos-latest]
         embedded-py: [3.9.8, 3.11.5]
     env:
-      create_pck: conan create . lumicks/testing -o embedded_python:version=${{ matrix.embedded-py }} --build=missing
+      create_pck: conan create . lumicks/testing -o embedded_python-core:version=${{ matrix.embedded-py }} --build=missing
     steps:
     - if: runner.os == 'Windows' # `pylake` git clone goes over the limit
       run: git config --system core.longpaths true
