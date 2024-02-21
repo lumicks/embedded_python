@@ -10,7 +10,7 @@ required_conan_version = ">=1.59.0"
 # noinspection PyUnresolvedReferences
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.8.2"  # of the Conan package, `options.version` is the Python version
+    version = "1.9.0"  # of the Conan package, `options.version` is the Python version
     license = "PSFL"
     description = "Embedded distribution of Python"
     topics = "embedded", "python"
@@ -24,7 +24,6 @@ class EmbeddedPython(ConanFile):
         "pip_licenses_version": ["ANY"],
         "setuptools_version": ["ANY"],
         "wheel_version": ["ANY"],
-        "openssl_variant": ["lowercase", "uppercase"],  # OBSOLETE: only here for compatibility
     }
     default_options = {
         "packages": None,
@@ -32,7 +31,6 @@ class EmbeddedPython(ConanFile):
         "pip_licenses_version": "4.3.2",
         "setuptools_version": "67.8.0",
         "wheel_version": "0.40.0",
-        "openssl_variant": "lowercase",
     }
     short_paths = True  # some of the pip packages go over the 260 char path limit on Windows
     exports_sources = "embedded_python.cmake"
