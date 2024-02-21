@@ -20,7 +20,7 @@ class TestEmbeddedPython(ConanFile):
     options = {"env": [None, "ANY"]}
     default_options = {
         "env": None,
-        "embedded_python:version": "3.11.5",
+        "embedded_python-core:version": "3.11.5",
     }
 
     def configure(self):

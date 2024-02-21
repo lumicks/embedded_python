@@ -10,7 +10,7 @@ required_conan_version = ">=1.59.0"
 # noinspection PyUnresolvedReferences
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.9.0"  # of the Conan package, `options.version` is the Python version
+    version = "1.9.0"  # of the Conan package, `embedded_python-core:version` is the Python version
     license = "PSFL"
     description = "Embedded distribution of Python"
     topics = "embedded", "python"
@@ -18,7 +18,6 @@ class EmbeddedPython(ConanFile):
     url = "https://github.com/lumicks/embedded_python"
     settings = "os", "arch"
     options = {
-        "version": ["ANY"],
         "packages": [None, "ANY"],
         "pip_version": ["ANY"],
         "pip_licenses_version": ["ANY"],
@@ -38,23 +37,20 @@ class EmbeddedPython(ConanFile):
     def requirements(self):
         self.requires(f"embedded_python-core/1.2.2@{self.user}/{self.channel}")
 
-    def configure(self):
-        self.options["embedded_python-core"].version = self.options.version
-
     @property
     def pyversion(self):
         """Full Python version that we want to package, e.g. 3.11.3"""
-        return scm.Version(self.options.version)
+        return scm.Version(self.dependencies["embedded_python-core"].options.version)
 
     @property
     def short_pyversion(self):
         """The first two components of the version number, e.g. 3.11"""
-        return scm.Version(".".join(str(self.options.version).split(".")[:2]))
+        return scm.Version(".".join(str(self.pyversion).split(".")[:2]))
 
     @property
     def int_pyversion(self):
         """The first two components of the version number in integer form, e.g. 311"""
-        return scm.Version("".join(str(self.options.version).split(".")[:2]))
+        return scm.Version("".join(str(self.pyversion).split(".")[:2]))
 
     @property
     def core_pkg(self):
