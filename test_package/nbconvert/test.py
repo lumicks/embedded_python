@@ -1,4 +1,5 @@
 """Some packages distrubute additional data: ensure that it is there"""
+
 import sys
 import pathlib
 from jupyter_core import paths
