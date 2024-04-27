@@ -35,7 +35,7 @@ class EmbeddedPython(ConanFile):
     exports_sources = "embedded_python.cmake"
 
     def requirements(self):
-        self.requires(f"embedded_python-core/1.2.2@{self.user}/{self.channel}")
+        self.requires(f"embedded_python-core/1.3.0@{self.user}/{self.channel}")
 
     @property
     def pyversion(self):

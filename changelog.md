@@ -2,6 +2,7 @@
 
 ## v1.9.0 | In development
 
+- Added support for Conan v2.
 - Removed the obsolete `openssl_variant` option.
 - Removed redundant `embedded_python:version` option. Use `embedded_python-core:version`.
 

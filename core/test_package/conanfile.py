@@ -1,16 +1,21 @@
+import sys
 import pathlib
-from io import StringIO
+import subprocess
+import conan
 from conan import ConanFile
-from conan.tools.cmake import CMake, CMakeToolchain
+from conan.tools.cmake import CMake, CMakeToolchain, cmake_layout
 
 
 # noinspection PyUnresolvedReferences
 class TestEmbeddedPythonCore(ConanFile):
     name = "test_embedded_python"
     settings = "os", "compiler", "build_type", "arch"
-    generators = "CMakeDeps"
-    default_options = {"embedded_python-core:version": "3.11.3"}
+    generators = "CMakeDeps", "VirtualRunEnv"
+    default_options = {"embedded_python-core/*:version": "3.11.3"}
     test_type = "explicit"
+
+    def layout(self):
+        cmake_layout(self)
 
     def requirements(self):
         self.requires(self.tested_reference_str)
@@ -22,11 +27,13 @@ class TestEmbeddedPythonCore(ConanFile):
         tc.generate()
 
     def build(self):
+        sys.path.append(str(self._core_package_path))
+
         import embedded_python_tools
 
         embedded_python_tools.symlink_import(self, dst="bin/python")
         cmake = CMake(self)
-        cmake.configure()
+        cmake.configure(variables={"EXPECTED_PYTHON_CORE_PATH": self._core_package_path.as_posix()})
         cmake.build()
 
     @property
@@ -35,6 +42,13 @@ class TestEmbeddedPythonCore(ConanFile):
             return pathlib.Path(self.build_folder, "bin/python/python.exe")
         else:
             return pathlib.Path(self.build_folder, "bin/python/bin/python3")
+
+    @property
+    def _core_package_path(self):
+        if conan.__version__.startswith("2"):
+            return pathlib.Path(self.dependencies["embedded_python-core"].package_folder)
+        else:
+            return pathlib.Path(self.deps_cpp_info["embedded_python-core"].rootpath)
 
     def _test_stdlib(self):
         """Ensure that Python runs and built the optional stdlib modules"""
@@ -46,9 +60,10 @@ class TestEmbeddedPythonCore(ConanFile):
         if self.settings.os != "Macos":
             return
 
-        buffer = StringIO()
-        self.run(f"otool -L {self._py_exe}", run_environment=True, output=buffer)
-        lines = buffer.getvalue().strip().split("\n")[1:]
+        p = subprocess.run(
+            ["otool", "-L", str(self._py_exe)], check=True, text=True, capture_output=True
+        )
+        lines = str(p.stdout).strip().split("\n")[1:]
         libraries = [line.split()[0] for line in lines]
         candidates = [lib for lib in libraries if "libpython" in lib]
         assert candidates, f"libpython dependency not found in 'otool' output: {libraries}"
@@ -57,12 +72,11 @@ class TestEmbeddedPythonCore(ConanFile):
 
     def _test_embed(self):
         """Ensure that everything is available to compile and link to the embedded Python"""
-        self.run(pathlib.Path("bin", "test_package"), run_environment=True)
+        self.run(pathlib.Path("bin", "test_package"), env="conanrun")
 
     def _test_licenses(self):
         """Ensure that the license file is included"""
-        license_dir = pathlib.Path(self.deps_cpp_info["embedded_python-core"].rootpath, "licenses")
-        file = license_dir / "LICENSE.txt"
+        file = self._core_package_path / "licenses/LICENSE.txt"
         print(f"{file}: {file.stat().st_size}")
 
     def test(self):

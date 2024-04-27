@@ -1,9 +1,10 @@
-import io
 import os
+import subprocess
 import sys
 import shutil
 import pathlib
 from conan import ConanFile
+from conan.errors import ConanInvalidConfiguration
 from conan.tools import files, scm
 
 required_conan_version = ">=1.59.0"
@@ -12,7 +13,7 @@ required_conan_version = ">=1.59.0"
 # noinspection PyUnresolvedReferences
 class EmbeddedPythonCore(ConanFile):
     name = "embedded_python-core"
-    version = "1.2.2"  # of the Conan package, `options.version` is the Python version
+    version = "1.3.0"  # of the Conan package, `options.version` is the Python version
     license = "PSFL"
     description = "The core embedded Python (no extra pip packages)"
     topics = "embedded", "python"
@@ -154,9 +155,8 @@ class EmbeddedPythonCore(ConanFile):
             return
 
         exe = dst / f"python{self.short_pyversion}"
-        buffer = io.StringIO()
-        self.run(f"otool -L {exe}", output=buffer)
-        lines = buffer.getvalue().strip().split("\n")[1:]
+        p = subprocess.run(["otool", "-L", str(exe)], check=True, text=True, capture_output=True)
+        lines = str(p.stdout).strip().split("\n")[1:]
         libraries = [line.split()[0] for line in lines]
         hardcoded_libraries = [lib for lib in libraries if lib.startswith(str(dst))]
         for lib in hardcoded_libraries:
