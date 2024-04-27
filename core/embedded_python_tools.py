@@ -1,7 +1,7 @@
 import os
 import shutil
 import pathlib
-from conan.tools.files import copy
+from conan.tools import files
 
 
 def _symlink_compat(conanfile, src, dst):
@@ -12,7 +12,7 @@ def _symlink_compat(conanfile, src, dst):
         try:
             _winapi.CreateJunction(str(src), str(dst))
         except OSError:
-            copy(conanfile, "*", src, dst)
+            files.copy(conanfile, "*", src, dst)
     else:
         os.symlink(src, dst)
 
@@ -56,7 +56,7 @@ def symlink_import(conanfile, dst="bin/python/interpreter", bin="bin"):
     _symlink_compat(conanfile, src, dst)
 
     bin = pathlib.Path(bin).absolute()
-    copy(conanfile, "python*.dll", src, bin, keep_path=False)
-    copy(conanfile, "libpython*.so*", src / "lib", bin, keep_path=False)
-    copy(conanfile, "libpython*.dylib", src / "lib", bin, keep_path=False)
-    copy(conanfile, "python*.zip", src, bin, keep_path=False)
+    files.copy(conanfile, "python*.dll", src, bin, keep_path=False)
+    files.copy(conanfile, "libpython*.so*", src / "lib", bin, keep_path=False)
+    files.copy(conanfile, "libpython*.dylib", src / "lib", bin, keep_path=False)
+    files.copy(conanfile, "python*.zip", src, bin, keep_path=False)
