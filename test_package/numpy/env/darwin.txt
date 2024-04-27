@@ -1,10 +1,10 @@
-attrs==23.1.0
+attrs==23.2.0
     # via hypothesis
-exceptiongroup==1.1.1
+exceptiongroup==1.2.1
     # via
     #   hypothesis
     #   pytest
-execnet==1.9.0
+execnet==2.1.1
     # via pytest-xdist
 hypothesis==6.75.3
     # via -r test_package/numpy/requirements.txt
@@ -12,9 +12,9 @@ iniconfig==2.0.0
     # via pytest
 numpy==1.24.3
     # via -r test_package/numpy/requirements.txt
-packaging==23.1
+packaging==24.0
     # via pytest
-pluggy==1.0.0
+pluggy==1.5.0
     # via pytest
 pytest==7.3.1
     # via
