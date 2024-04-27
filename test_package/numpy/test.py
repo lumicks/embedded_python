@@ -1,4 +1,5 @@
 """`numpy` distributes its tests: run them"""
+
 import sys
 import numpy as np
 
