@@ -10,10 +10,6 @@ defusedxml==0.7.1
     # via nbconvert
 fastjsonschema==2.19.1
     # via nbformat
-importlib-metadata==7.1.0
-    # via
-    #   jupyter-client
-    #   nbconvert
 jinja2==3.1.3
     # via nbconvert
 jsonschema==4.21.1
@@ -34,11 +30,11 @@ markupsafe==2.1.5
     # via
     #   jinja2
     #   nbconvert
-mistune==2.0.5
+mistune==3.0.2
     # via nbconvert
 nbclient==0.10.0
     # via nbconvert
-nbconvert==7.4.0
+nbconvert==7.16.3
     # via -r test_package/nbconvert/requirements.txt
 nbformat==5.10.4
     # via
@@ -85,5 +81,3 @@ webencodings==0.5.1
     # via
     #   bleach
     #   tinycss2
-zipp==3.18.1
-    # via importlib-metadata

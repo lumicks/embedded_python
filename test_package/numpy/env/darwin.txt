@@ -1,30 +1,24 @@
 attrs==23.2.0
     # via hypothesis
-exceptiongroup==1.2.1
-    # via
-    #   hypothesis
-    #   pytest
 execnet==2.1.1
     # via pytest-xdist
-hypothesis==6.75.3
+hypothesis==6.100.2
     # via -r test_package/numpy/requirements.txt
 iniconfig==2.0.0
     # via pytest
-numpy==1.24.3
+numpy==1.26.4
     # via -r test_package/numpy/requirements.txt
 packaging==24.0
     # via pytest
 pluggy==1.5.0
     # via pytest
-pytest==7.3.1
+pytest==8.2.0
     # via
     #   -r test_package/numpy/requirements.txt
     #   pytest-xdist
-pytest-xdist==3.3.1
+pytest-xdist==3.5.0
     # via -r test_package/numpy/requirements.txt
 sortedcontainers==2.4.0
     # via hypothesis
-tomli==2.0.1
-    # via pytest
-typing-extensions==4.5.0
+typing-extensions==4.11.0
     # via -r test_package/numpy/requirements.txt
