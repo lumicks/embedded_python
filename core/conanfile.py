@@ -30,7 +30,7 @@ class EmbeddedPythonCore(ConanFile):
     exports_sources = "embedded_python_tools.py", "embedded_python-core.cmake"
 
     def validate(self):
-        minimum_python = "3.9.8"
+        minimum_python = "3.11.5"
         if self.pyversion < minimum_python:
             raise ConanInvalidConfiguration(f"Minimum supported Python version is {minimum_python}")
 
@@ -51,26 +51,19 @@ class EmbeddedPythonCore(ConanFile):
         if self.settings.os == "Windows":
             return  # on Windows, we download a binary, so we don't need anything else
 
-        self.requires("sqlite3/3.42.0")
+        self.requires("sqlite3/3.45.3")
         self.requires("bzip2/1.0.8")
-        self.requires("xz_utils/5.4.2")
+        self.requires("xz_utils/5.4.5")
         self.requires("zlib/[>=1.2.11 <2]")
+        self.requires("openssl/[>=3 <4]")
         if self.settings.os == "Linux":
             self.requires("libffi/3.4.4")
             self.requires("libuuid/1.0.3")
-            if self.pyversion < "3.8":
-                self.requires("mpdecimal/2.4.2")
-            else:
-                self.requires("mpdecimal/2.5.0")
-
-        if self.pyversion >= scm.Version("3.11.0"):
-            self.requires("openssl/[>=3 <4]")
-        else:
-            self.requires("openssl/1.1.1w")
+            self.requires("mpdecimal/2.5.1")
 
     @property
     def pyversion(self):
-        """Full Python version that we want to package, e.g. 3.11.3"""
+        """Full Python version that we want to package, e.g. 3.11.5"""
         return scm.Version(self.options.version)
 
     @property
@@ -221,13 +214,9 @@ class EmbeddedPythonCore(ConanFile):
                 for pyc_file in (pathlib.Path(root, f) for f in file_names if f.endswith(".pyc")):
                     zf.write(pyc_file, arcname=str(pyc_file.relative_to(lib)))
 
-        def is_landmark(filepath):
-            """Older Python version require `os.py(c)` to use as a landmark for the stdlib"""
-            return self.pyversion < "3.11.0" and filepath.name == "os.pyc"
-
         # Delete everything that we can in `lib`: the `.zip` takes over
         for path in lib.iterdir():
-            if path.is_file() and not is_landmark(path):
+            if path.is_file():
                 path.unlink()
             elif path.is_dir() and path.name not in keep_lib_dirs:
                 shutil.rmtree(path)
