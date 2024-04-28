@@ -26,10 +26,10 @@ class EmbeddedPython(ConanFile):
     }
     default_options = {
         "packages": None,
-        "pip_version": "23.1.2",
-        "pip_licenses_version": "4.3.2",
-        "setuptools_version": "67.8.0",
-        "wheel_version": "0.40.0",
+        "pip_version": "24.0",
+        "pip_licenses_version": "4.4.0",
+        "setuptools_version": "69.5.1",
+        "wheel_version": "0.43.0",
     }
     short_paths = True  # some of the pip packages go over the 260 char path limit on Windows
     exports_sources = "embedded_python.cmake"
@@ -39,7 +39,7 @@ class EmbeddedPython(ConanFile):
 
     @property
     def pyversion(self):
-        """Full Python version that we want to package, e.g. 3.11.3"""
+        """Full Python version that we want to package, e.g. 3.11.5"""
         return scm.Version(self.dependencies["embedded_python-core"].options.version)
 
     @property

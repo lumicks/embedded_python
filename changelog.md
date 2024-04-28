@@ -1,8 +1,11 @@
 # Changelog
 
-## v1.9.0 | In development
+## v1.9.0 | 2024-05-03
 
 - Added support for Conan v2.
+- Added support for Python 3.12.
+- Updated default recipe options to `pip` v24.0, `setuptools` v69.5.1, `wheel` v0.43.0, and `pip-licenses` v4.4.0 for compatibility with Python 3.12.
+- Dropped support for Python versions older than 3.11.5 in order to avoid maintaining both `openssl` v1 and v3.
 - Removed the obsolete `openssl_variant` option.
 - Removed redundant `embedded_python:version` option. Use `embedded_python-core:version`.
 

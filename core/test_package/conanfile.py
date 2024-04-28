@@ -11,7 +11,6 @@ class TestEmbeddedPythonCore(ConanFile):
     name = "test_embedded_python"
     settings = "os", "compiler", "build_type", "arch"
     generators = "CMakeDeps", "VirtualRunEnv"
-    default_options = {"embedded_python-core/*:version": "3.11.3"}
     test_type = "explicit"
 
     def layout(self):
