@@ -4,23 +4,23 @@ colorama==0.4.6
     # via pytest
 execnet==2.1.1
     # via pytest-xdist
-hypothesis==6.100.2
+hypothesis==6.103.1
     # via -r test_package\numpy\requirements.txt
 iniconfig==2.0.0
     # via pytest
 numpy==1.26.4
     # via -r test_package\numpy\requirements.txt
-packaging==24.0
+packaging==24.1
     # via pytest
 pluggy==1.5.0
     # via pytest
-pytest==8.2.0
+pytest==8.2.2
     # via
     #   -r test_package\numpy\requirements.txt
     #   pytest-xdist
-pytest-xdist==3.5.0
+pytest-xdist==3.6.1
     # via -r test_package\numpy\requirements.txt
 sortedcontainers==2.4.0
     # via hypothesis
-typing-extensions==4.11.0
+typing-extensions==4.12.2
     # via -r test_package\numpy\requirements.txt
