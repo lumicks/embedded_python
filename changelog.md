@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.9.1 | In development
+
+- Fixed an issue where calling CMake with `-DPython_EXECUTABLE=<system_python>` created conflicts with the embedded Python (either a loud version error, or silently passing the wrong library paths). Some IDEs would pass this flag implicitly and it would hijack the `find_package(Python)` call used internally by this recipe. Now, we specifically protect against this since there should be no traces of system Python in a project that wishes to embed it.
+
 ## v1.9.0 | 2024-05-03
 
 - Added support for Conan v2.

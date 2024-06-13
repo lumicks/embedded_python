@@ -32,7 +32,14 @@ class TestEmbeddedPythonCore(ConanFile):
 
         embedded_python_tools.symlink_import(self, dst="bin/python")
         cmake = CMake(self)
-        cmake.configure(variables={"EXPECTED_PYTHON_CORE_PATH": self._core_package_path.as_posix()})
+        cmake.configure(
+            variables={
+                # To test that we find the correct prefix for `Python_EXECUTABLE`
+                "EXPECTED_PYTHON_CORE_PATH": self._core_package_path.as_posix(),
+                # We specify the wrong exe here (system Python) to test that we do ignore it
+                "Python_EXECUTABLE": sys.executable,
+            }
+        )
         cmake.build()
 
     @property

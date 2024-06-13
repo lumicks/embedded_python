@@ -11,7 +11,7 @@
 # since those are already provided by `core`.
 
 if(WIN32)
-    set(EmbeddedPython_EXECUTABLE "${CMAKE_CURRENT_LIST_DIR}/embedded_python/python.exe")
+    set(EmbeddedPython_EXECUTABLE "${CMAKE_CURRENT_LIST_DIR}/embedded_python/python.exe" CACHE STRING "" FORCE)
 else()
-    set(EmbeddedPython_EXECUTABLE "${CMAKE_CURRENT_LIST_DIR}/embedded_python/bin/python3")
+    set(EmbeddedPython_EXECUTABLE "${CMAKE_CURRENT_LIST_DIR}/embedded_python/python3" CACHE STRING "" FORCE)
 endif()
