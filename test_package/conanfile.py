@@ -3,7 +3,7 @@ import pathlib
 import subprocess
 import conan
 from conan import ConanFile
-from conan.tools.cmake import CMake, CMakeToolchain, cmake_layout
+from conan.tools.cmake import CMake, cmake_layout
 
 project_root = pathlib.Path(__file__).parent
 
@@ -17,12 +17,13 @@ def _read_env(name):
 class TestEmbeddedPython(ConanFile):
     name = "test_embedded_python"
     settings = "os", "compiler", "build_type", "arch"
-    generators = "CMakeDeps", "VirtualRunEnv"
+    generators = "CMakeToolchain", "CMakeDeps", "VirtualRunEnv"
     options = {"env": [None, "ANY"]}
     default_options = {
         "env": None,
         "embedded_python-core/*:version": "3.11.5",
     }
+    package_type = "shared-library"
 
     @property
     def _core_package_path(self):
@@ -38,6 +39,11 @@ class TestEmbeddedPython(ConanFile):
         else:
             return pathlib.Path(self.deps_cpp_info["embedded_python"].rootpath)
 
+    @property
+    def _py_exe(self):
+        exe = "python.exe" if sys.platform == "win32" else "python3"
+        return self._package_path / "embedded_python" / exe
+
     def layout(self):
         cmake_layout(self)
 
@@ -48,19 +54,7 @@ class TestEmbeddedPython(ConanFile):
         if self.options.env:
             self.options["embedded_python"].packages = _read_env(self.options.env)
 
-    def generate(self):
-        build_type = self.settings.build_type.value
-        tc = CMakeToolchain(self)
-        tc.variables[f"CMAKE_RUNTIME_OUTPUT_DIRECTORY_{build_type.upper()}"] = "bin"
-        tc.generate()
-
     def build(self):
-        sys.path.append(str(self._package_path))
-
-        import embedded_python_tools
-
-        embedded_python_tools.symlink_import(self, dst="bin/python")
-
         cmake = CMake(self)
         cmake.configure(
             variables={
@@ -75,22 +69,17 @@ class TestEmbeddedPython(ConanFile):
 
     def _test_env(self):
         """Ensure that Python runs and finds the installed environment"""
-        if self.settings.os == "Windows":
-            python_exe = str(pathlib.Path("./bin/python/python").resolve())
-        else:
-            python_exe = str(pathlib.Path("./bin/python/bin/python3").resolve())
-
-        self.run(f'{python_exe} -c "import sys; print(sys.version);"')
-
+        self.run(f'{self._py_exe} -c "import sys; print(sys.version);"')
         name = str(self.options.env) if self.options.env else "baseline"
-        self.run(f"{python_exe} {project_root / name / 'test.py'}", env="conanrun")
+        self.run(f"{self._py_exe} {project_root / name / 'test.py'}", env="conanrun")
 
     def _test_libpython_path(self):
         if self.settings.os != "Macos":
             return
 
-        python_exe = str(pathlib.Path("./bin/python/bin/python3").resolve())
-        p = subprocess.run(["otool", "-L", python_exe], check=True, text=True, capture_output=True)
+        p = subprocess.run(
+            ["otool", "-L", self._py_exe], check=True, text=True, capture_output=True
+        )
         lines = str(p.stdout).strip().split("\n")[1:]
         libraries = [line.split()[0] for line in lines]
         candidates = [lib for lib in libraries if "libpython" in lib]
@@ -101,7 +90,7 @@ class TestEmbeddedPython(ConanFile):
 
     def _test_embed(self):
         """Ensure that everything is available to compile and link to the embedded Python"""
-        self.run(pathlib.Path("bin", "test_package"), env="conanrun")
+        self.run(pathlib.Path(self.cpp.build.bindir, "test_package").absolute(), env="conanrun")
 
     def _test_licenses(self):
         """Ensure that the licenses have been gathered"""
