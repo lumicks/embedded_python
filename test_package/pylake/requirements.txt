@@ -1,2 +1,2 @@
-lumicks.pylake[notebook] @ git+https://github.com/lumicks/pylake@17b1c1317f2ce3b73a2a4c2071a705995538c72d
-    # Equivalent to pylake 1.4.0 but using a specific commit to validate the functionality
+lumicks.pylake[notebook] @ git+https://github.com/lumicks/pylake@86d6a6bd2d2acf5463869d74e69d2a34b0e962c2
+    # Equivalent to pylake 1.5.1 but using a specific commit to validate the functionality

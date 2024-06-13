@@ -7,7 +7,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        embedded-py: [3.11.5, 3.12.3]
+        embedded-py: [3.11.5, 3.12.4]
         conan:
           - version: 1
             args: lumicks/testing --build=missing
@@ -17,8 +17,6 @@ jobs:
     env:
       create_pck: conan create . ${{ matrix.conan.args }} -o embedded_python-core/*:version=${{ matrix.embedded-py }}
     steps:
-    - if: runner.os == 'Windows' # `pylake` git clone goes over the limit
-      run: git config --system core.longpaths true
     - uses: actions/checkout@v4
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -32,12 +30,12 @@ jobs:
     - if: matrix.conan.version == '1'
       name: Install Conan v1
       run: | 
-        python -m pip install conan==1.64.0
+        python -m pip install conan==1.64.1
         conan profile new default --detect
     - if: matrix.conan.version == '2'
       name: Install Conan v2
       run: |
-        python -m pip install conan==2.2.3
+        python -m pip install conan==2.4.1
         conan profile detect
     - name: Test core
       run: conan create ./core ${{ matrix.conan.args }} -o embedded_python-core/*:version=${{ matrix.embedded-py }}

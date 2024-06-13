@@ -1,5 +1,5 @@
-hypothesis==6.100.2
+hypothesis==6.103.1
 numpy==1.26.4
-pytest-xdist==3.5.0
-pytest==8.2.0
-typing-extensions==4.11.0
+pytest-xdist==3.6.1
+pytest==8.2.2
+typing-extensions==4.12.2

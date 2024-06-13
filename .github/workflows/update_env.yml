@@ -18,8 +18,6 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
     steps:
-    - if: runner.os == 'Windows' # `pylake` git clone goes over the limit
-      run: git config --system core.longpaths true
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
       with:
