@@ -1,8 +1,9 @@
 # Changelog
 
-## v1.9.1 | In development
+## v1.9.1 | 2024-06-17
 
 - Fixed an issue where calling CMake with `-DPython_EXECUTABLE=<system_python>` created conflicts with the embedded Python (either a loud version error, or silently passing the wrong library paths). Some IDEs would pass this flag implicitly and it would hijack the `find_package(Python)` call used internally by this recipe. Now, we specifically protect against this since there should be no traces of system Python in a project that wishes to embed it.
+- Provided an alternative to `embedded_python_tools.symlink_import()`. For dev builds, it's now possible to point `PyConfig::home` to the contents of `bin/.embedded_python(-core).home` to avoid needing to copy the entire Python environment into the build tree every time the project is reconfigured.
 
 ## v1.9.0 | 2024-05-03
 

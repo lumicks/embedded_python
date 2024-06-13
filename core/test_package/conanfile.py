@@ -3,14 +3,14 @@ import pathlib
 import subprocess
 import conan
 from conan import ConanFile
-from conan.tools.cmake import CMake, CMakeToolchain, cmake_layout
+from conan.tools.cmake import CMake, cmake_layout
 
 
 # noinspection PyUnresolvedReferences
 class TestEmbeddedPythonCore(ConanFile):
     name = "test_embedded_python"
     settings = "os", "compiler", "build_type", "arch"
-    generators = "CMakeDeps", "VirtualRunEnv"
+    generators = "CMakeToolchain", "CMakeDeps", "VirtualRunEnv"
     test_type = "explicit"
 
     def layout(self):
@@ -19,18 +19,7 @@ class TestEmbeddedPythonCore(ConanFile):
     def requirements(self):
         self.requires(self.tested_reference_str)
 
-    def generate(self):
-        build_type = self.settings.build_type.value
-        tc = CMakeToolchain(self)
-        tc.variables[f"CMAKE_RUNTIME_OUTPUT_DIRECTORY_{build_type.upper()}"] = "bin"
-        tc.generate()
-
     def build(self):
-        sys.path.append(str(self._core_package_path))
-
-        import embedded_python_tools
-
-        embedded_python_tools.symlink_import(self, dst="bin/python")
         cmake = CMake(self)
         cmake.configure(
             variables={
@@ -43,18 +32,16 @@ class TestEmbeddedPythonCore(ConanFile):
         cmake.build()
 
     @property
-    def _py_exe(self):
-        if self.settings.os == "Windows":
-            return pathlib.Path(self.build_folder, "bin/python/python.exe")
-        else:
-            return pathlib.Path(self.build_folder, "bin/python/bin/python3")
-
-    @property
     def _core_package_path(self):
         if conan.__version__.startswith("2"):
             return pathlib.Path(self.dependencies["embedded_python-core"].package_folder)
         else:
             return pathlib.Path(self.deps_cpp_info["embedded_python-core"].rootpath)
+
+    @property
+    def _py_exe(self):
+        exe = "python.exe" if sys.platform == "win32" else "python3"
+        return self._core_package_path / "embedded_python" / exe
 
     def _test_stdlib(self):
         """Ensure that Python runs and built the optional stdlib modules"""
@@ -78,7 +65,7 @@ class TestEmbeddedPythonCore(ConanFile):
 
     def _test_embed(self):
         """Ensure that everything is available to compile and link to the embedded Python"""
-        self.run(pathlib.Path("bin", "test_package"), env="conanrun")
+        self.run(pathlib.Path(self.cpp.build.bindir, "test_package").absolute(), env="conanrun")
 
     def _test_licenses(self):
         """Ensure that the license file is included"""

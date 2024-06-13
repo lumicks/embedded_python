@@ -27,7 +27,8 @@ class EmbeddedPythonCore(ConanFile):
     default_options = {
         "zip_stdlib": "stored",
     }
-    exports_sources = "embedded_python_tools.py", "embedded_python-core.cmake"
+    exports_sources = "embedded_python_tools.py", "embedded_python*.cmake"
+    package_type = "shared-library"
 
     def validate(self):
         minimum_python = "3.11.5"
@@ -277,7 +278,7 @@ class EmbeddedPythonCore(ConanFile):
     def package(self):
         src = self.build_folder
         dst = pathlib.Path(self.package_folder, "embedded_python")
-        files.copy(self, "embedded_python-core.cmake", src, dst=self.package_folder)
+        files.copy(self, "embedded_python*.cmake", src, dst=self.package_folder)
         files.copy(self, "embedded_python_tools.py", src, dst=self.package_folder)
         license_folder = pathlib.Path(self.package_folder, "licenses")
 
@@ -321,8 +322,10 @@ class EmbeddedPythonCore(ConanFile):
 
     def package_info(self):
         self.env_info.PYTHONPATH.append(self.package_folder)
-        self.cpp_info.set_property("cmake_build_modules", ["embedded_python-core.cmake"])
-        self.cpp_info.build_modules = ["embedded_python-core.cmake"]
+        self.cpp_info.set_property(
+            "cmake_build_modules", ["embedded_python-core.cmake", "embedded_python-tools.cmake"]
+        )
+        self.cpp_info.build_modules = ["embedded_python-core.cmake", "embedded_python-tools.cmake"]
         prefix = pathlib.Path(self.package_folder) / "embedded_python"
         self.cpp_info.includedirs = [str(prefix / "include")]
         if self.settings.os == "Windows":
