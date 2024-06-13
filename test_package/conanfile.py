@@ -64,8 +64,11 @@ class TestEmbeddedPython(ConanFile):
         cmake = CMake(self)
         cmake.configure(
             variables={
+                # To test that we find the correct prefix for `Python_EXECUTABLE`
                 "EXPECTED_PYTHON_CORE_PATH": self._core_package_path.as_posix(),
                 "EXPECTED_PYTHON_PATH": self._package_path.as_posix(),
+                # We specify the wrong exe here (system Python) to test that we do ignore it
+                "Python_EXECUTABLE": sys.executable,
             }
         )
         cmake.build()
