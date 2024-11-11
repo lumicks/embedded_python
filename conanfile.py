@@ -26,10 +26,10 @@ class EmbeddedPython(ConanFile):
     }
     default_options = {
         "packages": None,
-        "pip_version": "24.0",
+        "pip_version": "25.1.1",
         "pip_licenses_cli_version": "1.4.0",
-        "setuptools_version": "69.5.1",
-        "wheel_version": "0.43.0",
+        "setuptools_version": "80.9.0",
+        "wheel_version": "0.45.1",
     }
     exports_sources = "embedded_python.cmake"
 

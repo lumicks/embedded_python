@@ -52,13 +52,13 @@ class EmbeddedPythonCore(ConanFile):
         if self.settings.os == "Windows":
             return  # on Windows, we download a binary, so we don't need anything else
 
-        self.requires("sqlite3/3.45.3")
+        self.requires("sqlite3/3.49.1")
         self.requires("bzip2/1.0.8")
         self.requires("xz_utils/5.4.5")
         self.requires("zlib/[>=1.2.11 <2]")
         self.requires("openssl/[>=3 <4]")
         if self.settings.os == "Linux":
-            self.requires("libffi/3.4.4")
+            self.requires("libffi/3.4.8")
             self.requires("libuuid/1.0.3")
             self.requires("mpdecimal/2.5.1")
 

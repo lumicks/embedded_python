@@ -1,4 +1,4 @@
-Copyright (c) 2021, LUMICKS B.V.
+Copyright (c) 2025, LUMICKS B.V.
 
 Apache License, Version 2.0, January 2004, http://www.apache.org/licenses/
 
