@@ -1,7 +1,6 @@
 import sys
 import pathlib
 import subprocess
-import conan
 from conan import ConanFile
 from conan.tools.cmake import CMake, cmake_layout
 
@@ -27,17 +26,11 @@ class TestEmbeddedPython(ConanFile):
 
     @property
     def _core_package_path(self):
-        if conan.__version__.startswith("2"):
-            return pathlib.Path(self.dependencies["embedded_python-core"].package_folder)
-        else:
-            return pathlib.Path(self.deps_cpp_info["embedded_python-core"].rootpath)
+        return pathlib.Path(self.dependencies["embedded_python-core"].package_folder)
 
     @property
     def _package_path(self):
-        if conan.__version__.startswith("2"):
-            return pathlib.Path(self.dependencies["embedded_python"].package_folder)
-        else:
-            return pathlib.Path(self.deps_cpp_info["embedded_python"].rootpath)
+        return pathlib.Path(self.dependencies["embedded_python"].package_folder)
 
     @property
     def _py_exe(self):

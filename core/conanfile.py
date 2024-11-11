@@ -7,13 +7,13 @@ from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
 from conan.tools import files, scm
 
-required_conan_version = ">=1.59.0"
+required_conan_version = ">=2.5"
 
 
 # noinspection PyUnresolvedReferences
 class EmbeddedPythonCore(ConanFile):
     name = "embedded_python-core"
-    version = "1.3.1"  # of the Conan package, `options.version` is the Python version
+    version = "1.4.0"  # of the Conan package, `options.version` is the Python version
     license = "PSFL"
     description = "The core embedded Python (no extra pip packages)"
     topics = "embedded", "python"
@@ -27,7 +27,7 @@ class EmbeddedPythonCore(ConanFile):
     default_options = {
         "zip_stdlib": "stored",
     }
-    exports_sources = "embedded_python_tools.py", "embedded_python*.cmake"
+    exports_sources = "embedded_python*.cmake"
     package_type = "shared-library"
 
     def validate(self):
@@ -279,7 +279,6 @@ class EmbeddedPythonCore(ConanFile):
         src = self.build_folder
         dst = pathlib.Path(self.package_folder, "embedded_python")
         files.copy(self, "embedded_python*.cmake", src, dst=self.package_folder)
-        files.copy(self, "embedded_python_tools.py", src, dst=self.package_folder)
         license_folder = pathlib.Path(self.package_folder, "licenses")
 
         if self.settings.os == "Windows":
@@ -321,11 +320,9 @@ class EmbeddedPythonCore(ConanFile):
                 self._zip_stdlib(dst)
 
     def package_info(self):
-        self.env_info.PYTHONPATH.append(self.package_folder)
         self.cpp_info.set_property(
             "cmake_build_modules", ["embedded_python-core.cmake", "embedded_python-tools.cmake"]
         )
-        self.cpp_info.build_modules = ["embedded_python-core.cmake", "embedded_python-tools.cmake"]
         prefix = pathlib.Path(self.package_folder) / "embedded_python"
         self.cpp_info.includedirs = [str(prefix / "include")]
         if self.settings.os == "Windows":

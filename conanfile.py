@@ -4,13 +4,13 @@ import pathlib
 from conan import ConanFile
 from conan.tools import files, scm
 
-required_conan_version = ">=1.59.0"
+required_conan_version = ">=2.5.0"
 
 
 # noinspection PyUnresolvedReferences
 class EmbeddedPython(ConanFile):
     name = "embedded_python"
-    version = "1.9.1"  # of the Conan package, `embedded_python-core:version` is the Python version
+    version = "1.10.0"  # of the Conan package, `embedded_python-core:version` is the Python version
     license = "PSFL"
     description = "Embedded distribution of Python"
     topics = "embedded", "python"
@@ -31,11 +31,10 @@ class EmbeddedPython(ConanFile):
         "setuptools_version": "69.5.1",
         "wheel_version": "0.43.0",
     }
-    short_paths = True  # some of the pip packages go over the 260 char path limit on Windows
     exports_sources = "embedded_python.cmake"
 
     def requirements(self):
-        self.requires(f"embedded_python-core/1.3.1@{self.user}/{self.channel}")
+        self.requires(f"embedded_python-core/1.4.0@{self.user}/{self.channel}")
 
     @property
     def pyversion(self):
@@ -202,9 +201,7 @@ class EmbeddedPython(ConanFile):
         self._gather_packages(license_folder)
 
     def package_info(self):
-        self.env_info.PYTHONPATH.append(self.package_folder)
         self.cpp_info.set_property("cmake_build_modules", ["embedded_python.cmake"])
-        self.cpp_info.build_modules = ["embedded_python.cmake"]
         self.cpp_info.includedirs = []
         self.cpp_info.bindirs = []
         self.cpp_info.libdirs = []
