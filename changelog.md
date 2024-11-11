@@ -1,7 +1,8 @@
 # Changelog
 
-## v1.10.0 | TBD
+## v1.10.0 | 2025-07-23
 
+- Added support for Python 3.13.
 - Switched from `pip-licenses` to `pip-licenses-cli` since the former doesn't seem to be maintained anymore and is falling behind on compatibility. See https://github.com/raimon49/pip-licenses/issues/227. The matching `pip_licenses_version` option has been renamed to `pip_licenses_cli_version`.
 - Updated default recipe options to `pip` v25.1.1, `setuptools` v80.9.0, and `wheel` v0.45.1.
 - Dropped support for Conan v1.
