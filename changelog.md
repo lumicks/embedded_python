@@ -2,6 +2,7 @@
 
 ## v1.10.0 | TBD
 
+- Switched from `pip-licenses` to `pip-licenses-cli` since the former doesn't seem to be maintained anymore and is falling behind on compatibility. See https://github.com/raimon49/pip-licenses/issues/227. The matching `pip_licenses_version` option has been renamed to `pip_licenses_cli_version`.
 - Dropped support for Conan v1.
 
 ## v1.9.1 | 2024-06-17
