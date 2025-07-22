@@ -20,14 +20,14 @@ class EmbeddedPython(ConanFile):
     options = {
         "packages": [None, "ANY"],
         "pip_version": ["ANY"],
-        "pip_licenses_version": ["ANY"],
+        "pip_licenses_cli_version": ["ANY"],
         "setuptools_version": ["ANY"],
         "wheel_version": ["ANY"],
     }
     default_options = {
         "packages": None,
         "pip_version": "24.0",
-        "pip_licenses_version": "4.4.0",
+        "pip_licenses_cli_version": "1.4.0",
         "setuptools_version": "69.5.1",
         "wheel_version": "0.43.0",
     }
@@ -139,7 +139,7 @@ class EmbeddedPython(ConanFile):
             f"pip=={self.options.pip_version}",
             f"setuptools=={self.options.setuptools_version}",
             f"wheel=={self.options.wheel_version}",
-            f"pip-licenses=={self.options.pip_licenses_version}",
+            f"pip-licenses-cli=={self.options.pip_licenses_cli_version}",
         ]
         options = "--no-warn-script-location --upgrade"
         self._run_bootstrap_py(f"-m pip install {options} {' '.join(specs)}")
