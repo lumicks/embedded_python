@@ -50,7 +50,7 @@ pygments==2.19.2
     # via nbconvert
 python-dateutil==2.9.0.post0
     # via jupyter-client
-pyzmq==27.0.0
+pyzmq==27.1.0
     # via jupyter-client
 referencing==0.36.2
     # via
