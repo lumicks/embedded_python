@@ -24,7 +24,7 @@ jobs:
         python-version: "3.11"
     - name: Compile
       run: |
-        python -m pip install pip-tools==7.4.1
+        python -m pip install pip-tools==7.5.2
         python .github/workflows/update_env.py compile
     - uses: actions/upload-artifact@v4
       with:
