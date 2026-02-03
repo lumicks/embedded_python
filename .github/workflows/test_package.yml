@@ -6,7 +6,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [windows-2022, ubuntu-latest, macos-latest]
         embedded-py: [3.11.5, 3.12.10, 3.13.5]
     name: "${{ matrix.os }}, ${{ matrix.embedded-py }}"
     env:
