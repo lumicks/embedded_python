@@ -12,7 +12,7 @@ fastjsonschema==2.21.1
     # via nbformat
 jinja2==3.1.6
     # via nbconvert
-jsonschema==4.25.0
+jsonschema==4.26.0
     # via nbformat
 jsonschema-specifications==2025.4.1
     # via jsonschema
