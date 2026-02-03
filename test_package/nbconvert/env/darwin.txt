@@ -75,7 +75,7 @@ traitlets==5.14.3
     #   nbclient
     #   nbconvert
     #   nbformat
-typing-extensions==4.14.1
+typing-extensions==4.15.0
     # via
     #   beautifulsoup4
     #   referencing
