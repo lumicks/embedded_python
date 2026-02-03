@@ -4,7 +4,7 @@ attrs==25.3.0
     #   referencing
 beautifulsoup4==4.13.4
     # via nbconvert
-bleach[css]==6.2.0
+bleach[css]==6.3.0
     # via nbconvert
 defusedxml==0.7.1
     # via nbconvert
