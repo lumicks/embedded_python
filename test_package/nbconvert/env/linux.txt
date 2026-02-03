@@ -2,7 +2,7 @@ attrs==25.3.0
     # via
     #   jsonschema
     #   referencing
-beautifulsoup4==4.13.4
+beautifulsoup4==4.14.3
     # via nbconvert
 bleach[css]==6.2.0
     # via nbconvert
