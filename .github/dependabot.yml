@@ -6,7 +6,12 @@
 version: 2
 updates:
   - package-ecosystem: "pip" # Set the package ecosystem to Python's pip
-    directory: "/test_package/nbconvert" # Location of the Python project in the repository
+    directories: # Location of package manifests
+      - "/test_package/nbconvert"
+      - "/test_package/numpy"
+      - "/test_package/pylake"
     schedule:
       interval: "daily" # How often to check for updates
     open-pull-requests-limit: 10 # Maximum number of open pull requests
+    exclude-paths:
+      - "env/*" # Exclude any files in the env/ directory. Those are dynamically compiled.
