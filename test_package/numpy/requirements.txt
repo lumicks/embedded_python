@@ -2,4 +2,4 @@ hypothesis==6.136.2
 numpy==2.4.2
 pytest-xdist==3.8.0
 pytest==9.0.2
-typing-extensions==4.14.1
+typing-extensions==4.15.0
