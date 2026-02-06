@@ -1,10 +1,8 @@
-attrs==25.4.0
-    # via hypothesis
 colorama==0.4.6
     # via pytest
 execnet==2.1.2
     # via pytest-xdist
-hypothesis==6.136.2
+hypothesis==6.151.5
     # via -r test_package/numpy/requirements.txt
 iniconfig==2.3.0
     # via pytest
