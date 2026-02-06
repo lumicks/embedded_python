@@ -1,4 +1,4 @@
-hypothesis==6.136.2
+hypothesis==6.151.5
 numpy==2.4.2
 pytest-xdist==3.8.0
 pytest==9.0.2
