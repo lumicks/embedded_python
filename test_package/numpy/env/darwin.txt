@@ -1,6 +1,6 @@
 execnet==2.1.2
     # via pytest-xdist
-hypothesis==6.151.5
+hypothesis==6.151.6
     # via -r test_package/numpy/requirements.txt
 iniconfig==2.3.0
     # via pytest
