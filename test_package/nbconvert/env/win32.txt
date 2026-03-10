@@ -44,7 +44,7 @@ packaging==26.0
     # via nbconvert
 pandocfilters==1.5.1
     # via nbconvert
-platformdirs==4.5.1
+platformdirs==4.9.4
     # via jupyter-core
 pygments==2.19.2
     # via nbconvert
