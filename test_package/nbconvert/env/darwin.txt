@@ -1,4 +1,4 @@
-attrs==25.4.0
+attrs==26.1.0
     # via
     #   jsonschema
     #   referencing
@@ -46,7 +46,7 @@ pandocfilters==1.5.1
     # via nbconvert
 platformdirs==4.9.4
     # via jupyter-core
-pygments==2.19.2
+pygments==2.20.0
     # via nbconvert
 python-dateutil==2.9.0.post0
     # via jupyter-client
@@ -66,7 +66,7 @@ soupsieve==2.8.3
     # via beautifulsoup4
 tinycss2==1.4.0
     # via bleach
-tornado==6.5.4
+tornado==6.5.5
     # via jupyter-client
 traitlets==5.14.3
     # via
