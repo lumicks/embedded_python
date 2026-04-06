@@ -31,7 +31,7 @@ certifi==2026.2.25
     #   requests
 cffi==2.0.0
     # via argon2-cffi-bindings
-charset-normalizer==3.4.6
+charset-normalizer==3.4.7
     # via requests
 comm==0.2.3
     # via
@@ -130,7 +130,7 @@ jupyter-core==5.9.1
     #   nbformat
 jupyter-events==0.12.0
     # via jupyter-server
-jupyter-lsp==2.3.0
+jupyter-lsp==2.3.1
     # via jupyterlab
 jupyter-server==2.17.0
     # via
@@ -226,7 +226,7 @@ parso==0.8.6
     # via jedi
 pexpect==4.9.0
     # via ipython
-pillow==12.1.1
+pillow==12.2.0
     # via
     #   imageio
     #   ipympl
@@ -359,7 +359,7 @@ typing-extensions==4.15.0
     #   beautifulsoup4
     #   ipython
     #   referencing
-tzdata==2025.3
+tzdata==2026.1
     # via arrow
 uri-template==1.3.0
     # via jsonschema
