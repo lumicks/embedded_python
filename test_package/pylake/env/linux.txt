@@ -232,7 +232,7 @@ pillow==12.2.0
     #   ipympl
     #   matplotlib
     #   scikit-image
-platformdirs==4.9.4
+platformdirs==4.9.6
     # via jupyter-core
 pluggy==1.6.0
     # via pytest
