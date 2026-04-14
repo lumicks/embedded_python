@@ -2,13 +2,13 @@ colorama==0.4.6
     # via pytest
 execnet==2.1.2
     # via pytest-xdist
-hypothesis==6.151.14
+hypothesis==6.152.1
     # via -r test_package/numpy/requirements.txt
 iniconfig==2.3.0
     # via pytest
 numpy==2.4.4
     # via -r test_package/numpy/requirements.txt
-packaging==26.0
+packaging==26.1
     # via pytest
 pluggy==1.6.0
     # via pytest
