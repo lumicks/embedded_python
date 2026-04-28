@@ -24,9 +24,9 @@ beautifulsoup4==4.14.3
     # via nbconvert
 bleach[css]==6.3.0
     # via nbconvert
-cachetools==7.0.5
+cachetools==7.0.6
     # via lumicks-pylake
-certifi==2026.2.25
+certifi==2026.4.22
     # via
     #   httpcore
     #   httpx
@@ -67,7 +67,7 @@ httpcore==1.0.9
     # via httpx
 httpx==0.28.1
     # via jupyterlab
-idna==3.11
+idna==3.13
     # via
     #   anyio
     #   httpx
@@ -81,7 +81,7 @@ ipykernel==7.2.0
     # via jupyterlab
 ipympl==0.10.0
     # via lumicks-pylake
-ipython==9.10.1
+ipython==9.13.0
     # via
     #   ipykernel
     #   ipympl
@@ -130,7 +130,7 @@ jupyter-core==5.9.1
     #   nbclient
     #   nbconvert
     #   nbformat
-jupyter-events==0.12.0
+jupyter-events==0.12.1
     # via jupyter-server
 jupyter-lsp==2.3.1
     # via jupyterlab
@@ -167,7 +167,7 @@ markupsafe==3.0.3
     # via
     #   jinja2
     #   nbconvert
-matplotlib==3.10.8
+matplotlib==3.10.9
     # via
     #   ipympl
     #   lumicks-pylake
@@ -210,7 +210,7 @@ numpy==2.4.4
     #   tifffile
 overrides==7.7.0
     # via jupyter-server
-packaging==26.1
+packaging==26.2
     # via
     #   ipykernel
     #   jupyter-events
@@ -243,7 +243,9 @@ prometheus-client==0.25.0
 prompt-toolkit==3.0.52
     # via ipython
 psutil==7.2.2
-    # via ipykernel
+    # via
+    #   ipykernel
+    #   ipython
 ptyprocess==0.7.0
     # via
     #   pexpect
@@ -361,7 +363,7 @@ typing-extensions==4.15.0
     #   beautifulsoup4
     #   ipython
     #   referencing
-tzdata==2026.1
+tzdata==2026.2
     # via arrow
 uri-template==1.3.0
     # via jsonschema
