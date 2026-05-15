@@ -58,7 +58,7 @@ executing==2.2.1
     # via stack-data
 fastjsonschema==2.21.2
     # via nbformat
-fonttools==4.62.1
+fonttools==4.63.0
     # via matplotlib
 fqdn==1.5.1
     # via jsonschema
@@ -199,7 +199,7 @@ notebook-shim==0.2.4
     # via
     #   jupyterlab
     #   notebook
-numpy==2.4.4
+numpy==2.4.5
     # via
     #   contourpy
     #   h5py
@@ -285,7 +285,7 @@ referencing==0.37.0
     #   jsonschema
     #   jsonschema-specifications
     #   jupyter-events
-requests==2.34.1
+requests==2.34.2
     # via jupyterlab-server
 rfc3339-validator==0.1.4
     # via
