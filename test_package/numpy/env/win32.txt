@@ -6,7 +6,7 @@ hypothesis==6.152.7
     # via -r test_package/numpy/requirements.txt
 iniconfig==2.3.0
     # via pytest
-numpy==2.4.5
+numpy==2.4.6
     # via -r test_package/numpy/requirements.txt
 packaging==26.2
     # via pytest
