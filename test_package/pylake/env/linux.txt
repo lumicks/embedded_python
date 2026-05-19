@@ -22,7 +22,7 @@ beautifulsoup4==4.14.3
     # via nbconvert
 bleach[css]==6.3.0
     # via nbconvert
-cachetools==7.1.1
+cachetools==7.1.3
     # via lumicks-pylake
 certifi==2026.4.22
     # via
@@ -43,7 +43,7 @@ cycler==0.12.1
     # via matplotlib
 debugpy==1.8.20
     # via ipykernel
-decorator==5.2.1
+decorator==5.3.1
     # via ipython
 defusedxml==0.7.1
     # via nbconvert
@@ -194,7 +194,7 @@ notebook-shim==0.2.4
     # via
     #   jupyterlab
     #   notebook
-numpy==2.4.5
+numpy==2.4.6
     # via
     #   contourpy
     #   h5py
