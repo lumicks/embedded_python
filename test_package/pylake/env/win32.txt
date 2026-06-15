@@ -1,4 +1,4 @@
-anyio==4.13.0
+anyio==4.14.0
     # via
     #   httpx
     #   jupyter-server
@@ -80,7 +80,7 @@ imageio==2.37.3
     # via scikit-image
 iniconfig==2.3.0
     # via pytest
-ipykernel==7.2.0
+ipykernel==7.3.0
     # via jupyterlab
 ipympl==0.10.0
     # via lumicks-pylake
@@ -118,7 +118,7 @@ jsonschema[format-nongpl]==4.26.0
     #   nbformat
 jsonschema-specifications==2025.9.1
     # via jsonschema
-jupyter-client==8.9.0
+jupyter-client==8.9.1
     # via
     #   ipykernel
     #   jupyter-server
@@ -170,7 +170,7 @@ markupsafe==3.0.3
     # via
     #   jinja2
     #   nbconvert
-matplotlib==3.10.9
+matplotlib==3.11.0
     # via
     #   ipympl
     #   lumicks-pylake
@@ -191,7 +191,7 @@ nbformat==5.10.4
     #   jupyter-server
     #   nbclient
     #   nbconvert
-nest-asyncio==1.6.0
+nest-asyncio2==1.7.2
     # via ipykernel
 networkx==3.6.1
     # via scikit-image
@@ -261,7 +261,7 @@ pygments==2.20.0
     #   pytest
 pyparsing==3.3.2
     # via matplotlib
-pytest==9.0.3
+pytest==9.1.0
     # via lumicks-pylake
 python-dateutil==2.9.0.post0
     # via
@@ -270,7 +270,7 @@ python-dateutil==2.9.0.post0
     #   matplotlib
 python-json-logger==4.1.0
     # via jupyter-events
-pywinpty==3.0.3
+pywinpty==3.0.5
     # via
     #   jupyter-server
     #   jupyter-server-terminals
@@ -344,7 +344,7 @@ tornado==6.5.7
     #   jupyterlab
     #   notebook
     #   terminado
-tqdm==4.68.1
+tqdm==4.68.2
     # via lumicks-pylake
 traitlets==5.15.1
     # via
