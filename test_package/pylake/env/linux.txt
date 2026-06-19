@@ -102,7 +102,7 @@ jinja2==3.1.6
     #   nbconvert
 joblib==1.5.3
     # via scikit-learn
-json5==0.14.0
+json5==0.15.0
     # via jupyterlab-server
 jsonpointer==3.1.1
     # via jsonschema
@@ -267,7 +267,7 @@ pygments==2.20.0
     #   pytest
 pyparsing==3.3.2
     # via matplotlib
-pytest==9.1.0
+pytest==9.1.1
     # via lumicks-pylake
 python-dateutil==2.9.0.post0
     # via
